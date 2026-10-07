@@ -127,6 +127,34 @@ class LibreOfficeTests(unittest.TestCase):
         with self.assertRaises(OfficeError):
             self.call("uno_inspect", object=doc)
 
+    def test_typed_any_values_metadata_images_styles_and_pdf_options(self):
+        import base64
+        image = self.root / "pixel.png"
+        image.write_bytes(base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jWZkAAAAASUVORK5CYII="))
+        doc = self.new("writer")
+        self.call("writer_insert", document=doc, text="Styled document\n")
+        self.assertIn("ParagraphStyles", self.call("style_list", document=doc))
+        styles = self.call("style_list", document=doc, family="ParagraphStyles")
+        self.call("style_update", document=doc, family="ParagraphStyles", name=styles[0],
+                  properties={"CharHeight": 14.0})
+        self.call("writer_image", document=doc, path="pixel.png", width=1000, height=1000)
+        self.call("document_metadata", document=doc, values={
+            "Keywords": ["MCP", "UNO"],
+            "Language": {"$struct": "com.sun.star.lang.Locale", "fields": {"Language": "en", "Country": "US"}}})
+        metadata = self.call("document_metadata", document=doc)
+        self.assertEqual(metadata["Keywords"], ["MCP", "UNO"])
+        self.assertEqual(metadata["Language"]["fields"]["Language"], "en")
+        sheet_doc = self.new("calc")
+        sheets = self.call("uno_call", object=sheet_doc, method="getSheets")["$ref"]
+        sheet = self.call("uno_call", object=sheets, method="getByIndex", arguments=[0])["$ref"]
+        cells = self.call("uno_call", object=sheet, method="getCellRangeByName", arguments=["A1:A1"])["$ref"]
+        self.call("uno_set", object=cells, properties={"CellBackColor": {"$any": "long", "value": 0x112233}})
+        self.assertEqual(self.call("uno_get", object=cells, name="CellBackColor"), 0x112233)
+        self.call("document_save", document=doc, path="options.pdf", export=True,
+                  options={"FilterData": {"$properties": {"PageRange": "1", "SelectPdfVersion": 2}}})
+        self.assertTrue((self.root / "options.pdf").read_bytes().startswith(b"%PDF"))
+
     def test_overwrite_and_unsaved_close_protection(self):
         doc = self.new("writer")
         self.call("writer_insert", document=doc, text="Unsaved")

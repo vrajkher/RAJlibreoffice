@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: sudo apt-get update && sudo apt-get install -y libreoffice libreoffice-dev python3-uno libreoffice-sdbc-firebird
-      - run: python -m pip install -e '.[dev]' 'mcp>=1.29,<2'
+      - run: python -m pip install -e '.[dev]' 'mcp>=1.30,<2'
       - run: python -m unittest discover -s tests -v
       - run: raj-libreoffice doctor
   openai:

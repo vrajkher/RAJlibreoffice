@@ -7,7 +7,7 @@ name = "raj-libreoffice-mcp"
 version = "0.1.0"
 description = "Structured LibreOffice automation over MCP, powered by UNO"
 requires-python = ">=3.10"
-dependencies = ["mcp>=1.29,<3", "pydantic>=2.12,<3"]
+dependencies = ["mcp>=1.30,<3", "pydantic>=2.12,<3"]
 license = "MIT"
 
 [project.optional-dependencies]

@@ -175,7 +175,7 @@ class Office:
                 setattr(struct, key, self.decode(val))
             return struct
         if "$properties" in value:
-            return self.props(value["$properties"])
+            return self.uno.Any("[]com.sun.star.beans.PropertyValue", self.props(value["$properties"]))
         raise ValueError("UNO dictionaries need $struct, $properties, $any, $enum or $ref")
 
     def doc(self, document, kind=None):
@@ -350,7 +350,7 @@ class Office:
 
     def set_properties(self, obj, properties):
         for name, value in (properties or {}).items():
-            obj.setPropertyValue(name, self.decode(value))
+            self.uno.invoke(obj, "setPropertyValue", (name, self.decode(value)))
 
     def writer_format(self, document, start, length, properties):
         self.set_properties(self.cursor(document, start, length), properties)
@@ -718,7 +718,7 @@ class Office:
         obj = self.ref(object)
         for name, value in properties.items():
             if hasattr(obj, "setPropertyValue"):
-                obj.setPropertyValue(name, self.decode(value))
+                self.uno.invoke(obj, "setPropertyValue", (name, self.decode(value)))
             else:
                 setattr(obj, name, self.decode(value))
         return {"updated": list(properties)}
@@ -736,10 +736,10 @@ class Office:
         args = tuple(self.decode(x) for x in arguments or [])
         if document:
             doc = self.doc(document)
-            obj = doc.createInstanceWithArguments(service, args) if args else doc.createInstance(service)
+            obj = self.uno.invoke(doc, "createInstanceWithArguments", (service, args)) if args else doc.createInstance(service)
         else:
-            obj = self.context.ServiceManager.createInstanceWithArgumentsAndContext(
-                service, args, self.context) if args else self.service(service)
+            obj = self.uno.invoke(self.context.ServiceManager, "createInstanceWithArgumentsAndContext",
+                                  (service, args, self.context)) if args else self.service(service)
         if obj is None:
             raise ValueError("Service is unavailable in this LibreOffice installation")
         return self.handle(obj, document)

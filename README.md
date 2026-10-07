@@ -19,7 +19,7 @@ sudo apt-get install libreoffice libreoffice-dev python3-uno libreoffice-sdbc-fi
 git clone https://github.com/vrajkher/RAJlibreoffice.git
 cd RAJlibreoffice
 python3 -m venv .venv
-.venv/bin/python -m pip install -e . 'mcp>=1.29,<2'
+.venv/bin/python -m pip install -e . 'mcp>=1.30,<2'
 
 # 3. Choose a document folder, check setup, then connect your MCP client.
 export RAJ_WORKSPACE="$PWD/workspace"
