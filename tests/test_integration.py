@@ -114,6 +114,10 @@ class LibreOfficeTests(unittest.TestCase):
         self.assertEqual(result["rows"], [["UNO"]])
         self.call("base_query", connection=conn, sql='INSERT INTO "items" VALUES (?, ?)',
                   parameters=[2, "Rollback"], write=True)
+        truncated = self.call("base_query", connection=conn,
+                              sql='SELECT "name" FROM "items" ORDER BY "id"', limit=1)
+        self.assertEqual(truncated["rows"], [["UNO"]])
+        self.assertTrue(truncated["has_more"])
         self.assertEqual(self.call("base_query", connection=conn,
                                   sql='SELECT "name" FROM "items" WHERE "id" = 2')["rows"], [["Rollback"]])
         self.call("base_transaction", connection=conn, action="rollback")

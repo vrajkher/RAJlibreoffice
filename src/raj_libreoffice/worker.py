@@ -681,7 +681,10 @@ class Office:
                     value = result.getString(i)
                     row.append(None if result.wasNull() else value)
                 rows.append(row)
-            return {"columns": columns, "rows": rows, "has_more": result.next()}
+            # Firebird rejects another fetch after EOF; probe only when the
+            # row limit stopped the loop before it reached EOF.
+            has_more = len(rows) == limit and result.next()
+            return {"columns": columns, "rows": rows, "has_more": has_more}
         finally:
             if result:
                 result.close()
