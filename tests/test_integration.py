@@ -1,5 +1,4 @@
 """Real LibreOffice integration: executed in CI with python3-uno installed."""
-import json
 import os
 from pathlib import Path
 import subprocess

@@ -2,7 +2,7 @@
 
 A Python MCP server that reads, creates, edits and exports LibreOffice documents through **UNO**. It includes simple tools for Writer, Calc, Impress, Draw, Math and Base, a reusable workflow runner, and an advanced bridge to LibreOffice's installed UNO API and SDK type information.
 
-OpenAI integration uses the official [`openai/mcp-extensions`](https://github.com/openai/mcp-extensions) Python package for composer mentions and native settings. It is an optional MCP 2 beta mode; standard MCP uses MCP 1.
+OpenAI integration uses the official [`openai/mcp-extensions`](https://github.com/openai/mcp-extensions) Python package for composer mentions and native settings. It is an optional MCP 2 mode; standard MCP supports MCP 1 and MCP 2.
 
 **Scope:** this is a broad automation foundation, not a claim that every LibreOffice feature is implemented and tested. Dedicated tools cover common workflows. The generic UNO bridge reaches additional APIs supported by the installed LibreOffice, extensions and drivers. GUI dialogs, signatures, accessibility, rendering fidelity, some presentation commands and operating-system integrations require further validation. See [coverage](docs/COVERAGE.md).
 
@@ -123,11 +123,11 @@ Advanced UNO, installed scripts and Python are trusted automation capabilities. 
 
 ```bash
 python3 -m venv .venv-openai
-.venv-openai/bin/python -m pip install --pre -e '.[openai]'
+.venv-openai/bin/python -m pip install -e '.[openai]'
 RAJ_WORKSPACE="$PWD/workspace" .venv-openai/bin/raj-libreoffice serve --openai
 ```
 
-This uses `openai-mcp-extensions==0.1.0`, whose declared dependency is MCP `>=2.0.0b2`. Use a separate environment from the standard MCP 1 install. Included plugin metadata lives in `.codex-plugin/plugin.json` and `.mcp.json`.
+This uses `openai-mcp-extensions==0.1.0`, whose declared dependency is MCP `>=2.0.0b2`; this repository requires the verified MCP 2.3 API. Use a separate environment from the standard MCP 1 install. Included plugin metadata lives in `.codex-plugin/plugin.json` and `.mcp.json`.
 
 Composer mentions search immediate workspace files. Native settings store a preferred format and optional PDF export in `.raj-preferences.json`. `document_save_preferred` applies those preferences; `document_save` always follows explicit arguments. The plugin does not install itself into your ChatGPT account or expose your desktop to a cloud client. Remote hosting and a graphical document editor are not included.
 
@@ -137,7 +137,7 @@ Composer mentions search immediate workspace files. Native settings store a pref
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-Unit tests verify tool schemas, path containment, capability gates, workflow references and worker errors. Integration tests exercise real Writer/Calc/Impress/Draw/Math documents, PDF output, typed UNO values and Base with embedded Firebird. They skip when PyUNO is unavailable. GitHub Actions installs LibreOffice and runs them in a standard-mode job; a second job validates native OpenAI extension registration.
+Unit tests verify tool schemas, path containment, capability gates, workflow references and worker errors. Integration tests exercise real Writer/Calc/Impress/Draw/Math documents, PDF output, typed UNO values and Base with embedded Firebird. They skip when PyUNO is unavailable. GitHub Actions installs LibreOffice and runs them in a standard-mode job; a second job validates native OpenAI extension registration and both jobs exercise the actual stdio protocol.
 
 This implementation was authored in an environment without LibreOffice or working shell network access. Local test results therefore do not establish real-office integration success; the CI run and [coverage map](docs/COVERAGE.md) are the relevant evidence.
 

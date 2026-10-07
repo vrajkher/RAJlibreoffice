@@ -1,5 +1,3 @@
-import asyncio
-import json
 from pathlib import Path
 import sys
 import tempfile
@@ -132,10 +130,6 @@ class CoreTests(unittest.TestCase):
 
 class StandardMCPTests(unittest.IsolatedAsyncioTestCase):
     async def test_tool_schemas_resources_and_structured_call(self):
-        try:
-            from mcp.server.fastmcp import FastMCP
-        except ImportError:
-            self.skipTest("MCP 1 standard mode is covered in its separate CI job")
         from raj_libreoffice.server import create_server
         with tempfile.TemporaryDirectory() as directory:
             server, bridge = create_server(Config(Path(directory), uno_python=sys.executable))
@@ -144,17 +138,16 @@ class StandardMCPTests(unittest.IsolatedAsyncioTestCase):
                 names = {t.name for t in tools}
                 self.assertEqual(len(names), 45)
                 calc = next(t for t in tools if t.name == "calc_write")
-                self.assertEqual(set(calc.inputSchema["required"]), {"document", "sheet", "range", "data"})
+                schema = calc.model_dump(by_alias=True)["inputSchema"]
+                self.assertEqual(set(schema["required"]), {"document", "sheet", "range", "data"})
                 resources = await server.list_resources()
                 self.assertEqual(len(resources), 3)
                 result = await server.call_tool("status", {})
                 # MCP 1 returns content blocks and structured output as a tuple.
-                self.assertIn("connected", result[1]["result"])
-                error = await server.call_tool("files_list", {"directory": "../escape"})
-                self.fail(f"Expected a ToolError, got {error}")
-            except Exception as error:
-                if "Path is outside RAJ_WORKSPACE" not in str(error):
-                    raise
+                data = result[1] if isinstance(result, tuple) else result.structured_content
+                self.assertIn("connected", data["result"])
+                with self.assertRaisesRegex(Exception, "Path is outside RAJ_WORKSPACE"):
+                    await server.call_tool("files_list", {"directory": "../escape"})
             finally:
                 bridge.close()
 

@@ -511,10 +511,11 @@ class Office:
         cells, address = self.cell_range(document, sheet, range)
         if column < 0 or column > address.EndColumn - address.StartColumn:
             raise ValueError("Sort column is a zero-based offset inside the range")
-        field = self.uno.createUnoStruct("com.sun.star.table.TableSortField")
-        field.Field, field.IsAscending = column, ascending
+        field = self.uno.createUnoStruct("com.sun.star.util.SortField")
+        field.Field, field.SortAscending = column, ascending
         descriptor = {p.Name: p.Value for p in cells.createSortDescriptor()}
-        descriptor.update({"SortFields": (field,), "ContainsHeader": header})
+        descriptor.pop("IsSortColumns", None)
+        descriptor.update({"SortFields": (field,), "ContainsHeader": header, "SortColumns": False})
         # Already-native structs must bypass JSON decoding.
         props = []
         for name, value in descriptor.items():
@@ -586,11 +587,19 @@ class Office:
         notes = self.page(document, page).getNotesPage()
         for i in range(notes.getCount()):
             shape = notes.getByIndex(i)
-            if shape.supportsService("com.sun.star.presentation.NotesShape"):
+            if shape.getShapeType() == "com.sun.star.presentation.NotesShape":
                 if text is not None:
                     shape.setString(text)
                 return {"text": shape.getString(), "object": self.handle(shape, document)}
-        raise ValueError("Slide has no notes text shape")
+        if text is None:
+            return {"text": ""}
+        shape = self.doc(document, "impress").createInstance("com.sun.star.presentation.NotesShape")
+        notes.add(shape)
+        size = self.uno.createUnoStruct("com.sun.star.awt.Size")
+        size.Width, size.Height = 15000, 10000
+        shape.setSize(size)
+        shape.setString(text)
+        return {"text": shape.getString(), "object": self.handle(shape, document)}
 
     def math_formula(self, document, formula=None):
         doc = self.doc(document, "math")
@@ -618,7 +627,7 @@ class Office:
             if not write:
                 conn.setReadOnly(True)
             statement = conn.prepareStatement(sql)
-            statement.setMaxRows(limit + 1)
+            statement.setPropertyValue("MaxRows", limit + 1)
             for i, value in enumerate(parameters or [], 1):
                 if value is None:
                     statement.setNull(i, 0)

@@ -1,6 +1,6 @@
 """Native OpenAI extensions using openai/mcp-extensions' Python SDK.
 
-Requires MCP 2 beta. Kept separate so standard MCP 1 clients remain supported.
+Requires MCP 2. Kept separate so standard MCP 1 clients remain supported.
 """
 from __future__ import annotations
 
@@ -27,8 +27,8 @@ def make_openai_server(bridge):
         )
     except ImportError as error:
         raise RuntimeError(
-            "OpenAI mode needs pip install --pre '.[openai]' in a separate environment; "
-            "the extensions SDK requires MCP 2 beta."
+            "OpenAI mode needs pip install '.[openai]' in a separate environment; "
+            "the extensions SDK requires MCP 2."
         ) from error
 
     import json

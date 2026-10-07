@@ -34,7 +34,7 @@ def doctor(config):
 def main():
     parser = argparse.ArgumentParser(description="RAJ LibreOffice MCP server")
     parser.add_argument("command", choices=["serve", "doctor"], nargs="?", default="serve")
-    parser.add_argument("--openai", action="store_true", help="Use OpenAI extensions and MCP 2 beta")
+    parser.add_argument("--openai", action="store_true", help="Use native OpenAI extensions with MCP 2")
     parser.add_argument("--transport", choices=["stdio", "streamable-http"], default="stdio")
     args = parser.parse_args()
     config = Config.from_env()
