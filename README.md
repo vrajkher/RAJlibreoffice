@@ -157,3 +157,5 @@ Run `bash scripts/setup.sh standard` or `bash scripts/setup.sh openai` after ins
 Native and standard modes support authenticated Streamable HTTP. See [HTTP setup](docs/HTTP.md) and [workflow recipes](docs/WORKFLOWS.md). Coverage and host-dependent features are tracked in [the coverage map](docs/COVERAGE.md).
 
 For the complete trusted tool set, use `.mcp.full.json` after running `bash scripts/setup.sh openai`, with absolute paths for your checkout. It enables generic UNO, installed scripts and unsandboxed Python (92 native tools). Use it only for a workspace and clients you trust. `.mcp.json` keeps these execution tools disabled by default.
+
+Embedded Base writes require **commit/rollback → document_save while the connection is open → base_transaction(close)**. The server guards this sequence so older LibreOffice Firebird drivers do not lose committed changes on close.

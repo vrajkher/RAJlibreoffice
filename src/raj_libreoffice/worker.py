@@ -52,6 +52,8 @@ class Office(FeatureMethods):
         self.objects = {}
         self.owners = {}
         self.documents = {}
+        self.database_dirty = set()
+        self.database_uncommitted = set()
 
     def connect(self):
         if self.context is not None:
@@ -234,7 +236,7 @@ class Office(FeatureMethods):
 
     def document_info(self, document):
         doc = self.doc(document)
-        return {**self.documents[document], "modified": bool(doc.isModified()),
+        return {**self.documents[document], "modified": bool(doc.isModified() or document in self.database_dirty),
                 "read_only": bool(doc.isReadonly()),
                 "services": list(doc.getSupportedServiceNames())}
 
@@ -243,12 +245,15 @@ class Office(FeatureMethods):
         doc = self.doc(document)
         if doc.isReadonly():
             raise ValueError("Document is read-only")
+        if any(self.owners.get(key) == document for key in self.database_uncommitted):
+            raise ValueError("Commit or rollback the embedded database transaction before document_save")
         if not path:
             if export or format or options:
                 raise ValueError("Specify an output path when exporting or selecting a format")
             if not doc.hasLocation():
                 raise ValueError("New documents require a path for the first save")
             doc.store()
+            self.database_dirty.discard(document)
             return {"saved": True, "path": self.documents[document]["path"]}
         target = self.path(path)
         if target.exists() and not overwrite:
@@ -274,17 +279,22 @@ class Office(FeatureMethods):
         else:
             doc.storeAsURL(target.as_uri(), self.props(props))
             self.documents[document]["path"] = str(target)
+            self.database_dirty.discard(document)
         return {"saved": True, "exported": export, "path": str(target),
                 "format": extension, "native": extension == native.get(kind)}
 
     def document_close(self, document, discard=False):
         doc = self.doc(document)
+        if document in self.database_dirty and not discard:
+            raise ValueError("Document has unsaved database changes; commit/rollback, save while connected, then close")
         if doc.isModified() and not discard:
             raise ValueError("Document has unsaved changes; save or set discard=true")
         doc.close(True)
+        self.database_dirty.discard(document)
         for key in [k for k, owner in self.owners.items() if owner == document]:
             self.objects.pop(key, None)
             self.owners.pop(key, None)
+            self.database_uncommitted.discard(key)
         self.documents.pop(document)
         return {"closed": True}
 
@@ -676,7 +686,14 @@ class Office(FeatureMethods):
                 else:
                     raise ValueError("SQL parameters must be scalars or typed parameter objects")
             if write:
-                return {"updated_rows": statement.executeUpdate()}
+                count = statement.executeUpdate()
+                owner = self.owners.get(connection)
+                if (owner in self.documents and self.documents[owner]["kind"] == "base"
+                        and self.doc(owner).DataSource.URL.startswith("sdbc:embedded:")):
+                    self.database_dirty.add(owner)
+                    if not conn.getAutoCommit():
+                        self.database_uncommitted.add(connection)
+                return {"updated_rows": count}
             result = statement.executeQuery()
             metadata = result.getMetaData()
             columns = [metadata.getColumnLabel(i) for i in range(1, metadata.getColumnCount() + 1)]
@@ -703,12 +720,18 @@ class Office(FeatureMethods):
             conn.setAutoCommit(False)
         elif action == "commit":
             conn.commit()
+            self.database_uncommitted.discard(connection)
         elif action == "rollback":
             conn.rollback()
+            self.database_uncommitted.discard(connection)
         elif action == "autocommit":
             conn.setAutoCommit(True)
+            self.database_uncommitted.discard(connection)
         elif action == "close":
+            if self.owners.get(connection) in self.database_dirty:
+                raise ValueError("Save the embedded database with document_save while its connection is open, before close")
             conn.close()
+            self.database_uncommitted.discard(connection)
         else:
             raise ValueError("action must be begin, commit, rollback, autocommit or close")
         return {"action": action}
@@ -828,6 +851,11 @@ class Office(FeatureMethods):
         for handle in handles:
             if handle in self.documents:
                 raise ValueError("Close documents using document_close")
+            obj = self.objects.get(handle)
+            if (self.owners.get(handle) in self.database_dirty and obj is not None
+                    and hasattr(obj, "supportsService")
+                    and obj.supportsService("com.sun.star.sdbc.Connection")):
+                raise ValueError("Save the embedded database before releasing its connection")
         for handle in handles:
             self.objects.pop(handle, None)
             self.owners.pop(handle, None)

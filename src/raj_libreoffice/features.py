@@ -455,6 +455,8 @@ class FeatureMethods:
                 "total": len(names), "object": self.handle(access)}
 
     def document_export(self, document, path, filter_name, overwrite=False, options=None):
+        if document in self.database_dirty:
+            raise ValueError("Save the embedded database while connected before exporting")
         target = self.path(path)
         if target.exists() and not overwrite:
             raise FileExistsError("Output exists; set overwrite=true")

@@ -107,6 +107,8 @@ class LibreOfficeTests(unittest.TestCase):
         pending = self.call("base_query", connection=conn, sql='SELECT "name" FROM "items" WHERE "id" = ?',
                             parameters=[1])
         self.assertEqual(pending["rows"], [["UNO"]])
+        with self.assertRaisesRegex(OfficeError, "Commit or rollback"):
+            self.call("document_save", document=doc)
         self.call("base_transaction", connection=conn, action="commit")
         self.assertIn("items", self.call("base_tables", connection=conn))
         result = self.call("base_query", connection=conn, sql='SELECT "name" FROM "items" WHERE "id" = ?',
@@ -123,8 +125,20 @@ class LibreOfficeTests(unittest.TestCase):
         self.call("base_transaction", connection=conn, action="rollback")
         self.assertEqual(self.call("base_query", connection=conn,
                                   sql='SELECT "name" FROM "items" WHERE "id" = 2')["rows"], [])
-        self.call("base_transaction", connection=conn, action="close")
+        with self.assertRaisesRegex(OfficeError, "Save the embedded database"):
+            self.call("base_transaction", connection=conn, action="close")
+        with self.assertRaisesRegex(OfficeError, "unsaved database"):
+            self.call("document_close", document=doc)
+        with self.assertRaisesRegex(OfficeError, "Save the embedded database"):
+            self.call("handles_release", handles=[conn])
         self.call("document_save", document=doc)
+        self.call("base_transaction", connection=conn, action="close")
+        self.call("document_close", document=doc)
+        doc = self.call("document_open", path="database.odb")["document"]
+        reopened = self.call("base_connect", document=doc)["$ref"]
+        self.assertEqual(self.call("base_query", connection=reopened,
+                                  sql='SELECT "name" FROM "items"')["rows"], [["UNO"]])
+        self.call("base_transaction", connection=reopened, action="close")
 
     def test_discovery_python_and_handle_invalidation(self):
         doc = self.new("writer")

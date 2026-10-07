@@ -214,8 +214,8 @@ class FeatureTests(unittest.TestCase):
         self.call("base_transaction", connection=connection, action="begin")
         self.call("base_query", connection=connection, sql='INSERT INTO "contacts" VALUES (?)', parameters=["Alice"], write=True)
         self.call("base_transaction", connection=connection, action="commit")
-        self.call("base_transaction", connection=connection, action="close")
         self.call("document_save", document=database)
+        self.call("base_transaction", connection=connection, action="close")
         self.call("document_close", document=database)
         database = self.call("document_open", path="contacts.odb")["document"]
         verify = self.call("base_connect", document=database)["$ref"]

@@ -15,7 +15,7 @@ Start every flow with `document_create` or `document_open`, then keep the return
 | Template | `document_from_template(path="template.odt")` creates an untitled editable copy |
 | Mail merge | Insert `writer_database_field(document, database="contacts.odb", table="contacts", column="name")`, save the template, then `writer_mail_merge(template="letter.odt", database="contacts.odb", table="contacts", output_directory="merged")` |
 
-Mail merge requires advanced mode and an empty output directory. It produces files, without sending email or printing. Commit and save database changes before merging; mail merge refreshes its own connection table catalog. Redline acceptance/rejection and comparison use generic UNO/dispatch; inspect installed APIs first.
+Mail merge requires advanced mode and an empty output directory. It produces files, without sending email or printing. Commit and save database changes while the connection remains open, then close it before merging; mail merge refreshes its own connection table catalog. Redline acceptance/rejection and comparison use generic UNO/dispatch; inspect installed APIs first.
 
 ## Calc
 
@@ -40,7 +40,7 @@ Use `presentation_page_configure` for names, master assignment, backgrounds and 
 
 `form_control(document, kind="TextField", name="Customer", properties={"Text":"Name"})` returns model, shape and form handles. Generic UNO adds bindings/events and edits other properties. Executable script events are trusted automation.
 
-Use `base_configure` to select a driver URL, save an ODB, then `base_connect`/`base_query`/`base_transaction`. `base_queries` manages saved SQL definitions. External JDBC/ODBC/SDBC drivers and credentials must be installed/configured separately.
+Use `base_configure` to select a driver URL, save an ODB, then `base_connect`/`base_query`/`base_transaction`. `base_queries` manages saved SQL definitions. For embedded databases, finish with **commit/rollback → document_save while connected → base_transaction(close) → document_close**. The server blocks saving an outstanding transaction and closing a connection with unsaved embedded data. This prevents older Firebird drivers from losing committed changes when the connection closes before the ODB backup is written. External JDBC/ODBC/SDBC drivers and credentials must be installed/configured separately.
 
 ## Export, services and scripts
 
