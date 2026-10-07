@@ -211,9 +211,16 @@ class FeatureTests(unittest.TestCase):
         self.call("document_save", document=database, path="contacts.odb")
         connection = self.call("base_connect", document=database)["$ref"]
         self.call("base_query", connection=connection, sql='CREATE TABLE "contacts" ("name" VARCHAR(80))', write=True)
+        self.call("base_transaction", connection=connection, action="begin")
         self.call("base_query", connection=connection, sql='INSERT INTO "contacts" VALUES (?)', parameters=["Alice"], write=True)
+        self.call("base_transaction", connection=connection, action="commit")
         self.call("base_transaction", connection=connection, action="close")
         self.call("document_save", document=database)
+        self.call("document_close", document=database)
+        database = self.call("document_open", path="contacts.odb")["document"]
+        verify = self.call("base_connect", document=database)["$ref"]
+        self.assertEqual(self.call("base_query", connection=verify, sql='SELECT "name" FROM "contacts"')["rows"], [["Alice"]])
+        self.call("base_transaction", connection=verify, action="close")
         self.call("writer_insert", document=doc, text="Hello ")
         self.call("writer_database_field", document=doc, database="contacts.odb", table="contacts", column="name")
         self.call("document_save", document=doc, path="letter.odt")

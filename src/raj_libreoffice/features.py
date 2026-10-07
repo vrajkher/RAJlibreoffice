@@ -483,7 +483,7 @@ class FeatureMethods:
         return {"updated_indexes": indexes.getCount()}
 
     def calc_solver(self, document, sheet, objective, variables, constraints=None, maximize=True,
-                    service="com.sun.star.sheet.Solver", properties=None):
+                    service="com.sun.star.comp.Calc.LpsolveSolver", properties=None):
         doc = self.doc(document, "calc")
         solver = self.service(service)
         if solver is None:
@@ -580,7 +580,20 @@ class FeatureMethods:
             "DataSourceName": source.as_uri(), "Command": table, "CommandType": 0,
             "OutputType": 2, "OutputURL": target.as_uri(), "FileNamePrefix": prefix,
             "FileNameFromColumn": False, "SaveAsSingleFile": single_file})
-        merge.execute(())
+        # Bind an explicit fresh connection. Default MailMerge connections can
+        # reuse a stale table catalog after SQL DDL on an already-open Base file.
+        data_source = self.service("com.sun.star.sdb.DatabaseContext").getByName(source.as_uri())
+        connection = data_source.getIsolatedConnection(data_source.User, data_source.Password)
+        try:
+            tables = connection.getTables()
+            if hasattr(tables, "refresh"):
+                tables.refresh()
+            if not tables.hasByName(table):
+                raise ValueError("Table not found; verify committed data with base_tables/base_query")
+            merge.setPropertyValue("ActiveConnection", connection)
+            merge.execute(())
+        finally:
+            connection.close()
         return {"files": [str(p.relative_to(self.config.workspace)) for p in sorted(target.iterdir()) if p.is_file()]}
 
 

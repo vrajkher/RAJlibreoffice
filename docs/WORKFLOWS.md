@@ -15,7 +15,7 @@ Start every flow with `document_create` or `document_open`, then keep the return
 | Template | `document_from_template(path="template.odt")` creates an untitled editable copy |
 | Mail merge | Insert `writer_database_field(document, database="contacts.odb", table="contacts", column="name")`, save the template, then `writer_mail_merge(template="letter.odt", database="contacts.odb", table="contacts", output_directory="merged")` |
 
-Mail merge requires advanced mode and an empty output directory. It produces files, without sending email or printing. Redline acceptance/rejection and comparison use generic UNO/dispatch; inspect installed APIs first.
+Mail merge requires advanced mode and an empty output directory. It produces files, without sending email or printing. Commit and save database changes before merging; mail merge refreshes its own connection table catalog. Redline acceptance/rejection and comparison use generic UNO/dispatch; inspect installed APIs first.
 
 ## Calc
 
@@ -32,7 +32,7 @@ Mail merge requires advanced mode and an empty output directory. It produces fil
 | Subtotals | `calc_subtotals(..., range="A1:B20", group_column=0, columns=[{"column":1,"function":"SUM"}])` |
 | Chart | Create with `calc_chart`, then use its handle with `calc_chart_configure(object=handle, diagram="com.sun.star.chart.BarDiagram", title="Totals")` |
 
-Array function arguments must be rectangular, containing only numbers or only strings. Solver availability/options depend on installed components. Pivot field names match source headers exactly. Filters and subtotals use columns relative to the source range.
+Array function arguments must be rectangular, containing only numbers or only strings. The default solver selects the native Lpsolve implementation to avoid GUI-dependent Java engines. Other engines can be selected with `service`; availability/options depend on installed components. Pivot field names match source headers exactly. Filters and subtotals use columns relative to the source range.
 
 ## Impress, Draw, forms and Base
 
