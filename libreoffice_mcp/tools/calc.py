@@ -218,7 +218,7 @@ def calc_autofilter(doc_id: str, range: str, enable: bool = True, sheet: str = "
     """Turn the AutoFilter dropdowns on/off for a range."""
     m, r = _rng(doc_id, range, sheet)
     dbs = m.DatabaseRanges
-    name = "mcp_filter_" + range.replace(":", "_").replace(".", "_")
+    name = "mcp_filter_" + "".join(ch if ch.isalnum() else "_" for ch in f"{r.Spreadsheet.Name}_{range.rpartition('.')[2]}")
     if not dbs.hasByName(name):
         dbs.addNewByName(name, r.RangeAddress)
     dbs.getByName(name).setPropertyValue("AutoFilter", enable)

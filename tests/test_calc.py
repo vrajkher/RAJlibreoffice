@@ -35,3 +35,14 @@ def test_calc_all():
     d.save_document_as(did, out)
     assert os.path.getsize(out) > 3000
     d.close_document(did)
+
+
+def test_autofilter_per_sheet():
+    did = d.create_document("calc")["doc_id"]
+    c.calc_sheet_edit(did, "add", "S2")
+    for sh in ("Sheet1", "S2"):
+        c.calc_set_range(did, "A1", [["h", "v"], ["a", 1]], sheet=sh)
+        c.calc_autofilter(did, "A1:B2", sheet=sh)
+    names = list(d.b.doc(did).DatabaseRanges.ElementNames)
+    assert len([n for n in names if n.startswith("mcp_filter_")]) == 2, names
+    d.close_document(did)

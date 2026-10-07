@@ -38,3 +38,14 @@ def test_writer_all():
     d.save_document_as(did, out)
     assert os.path.getsize(out) > 3000
     d.close_document(did)
+
+
+def test_header_clear():
+    did = d.create_document("writer")["doc_id"]
+    w.writer_header_footer(did, header="OLD")
+    w.writer_header_footer(did, header="")
+    w.writer_header_footer(did, header=None, footer=None, page_numbers="header")
+    m = d.b.doc(did)
+    ps = m.getStyleFamilies().getByName("PageStyles").getByName("Standard")
+    assert "OLD" not in ps.HeaderText.getString(), ps.HeaderText.getString()
+    d.close_document(did)

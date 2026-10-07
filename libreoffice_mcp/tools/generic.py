@@ -168,6 +168,7 @@ def run_python(code: str, doc_id: str = "") -> dict:
 
 def run_macro(macro_url: str, args: list = None) -> dict:
     """Run a Basic/Python macro by URL via the script provider, e.g. 'vnd.sun.star.script:Standard.Module1.Main?language=Basic&location=application'."""
+    b.desktop()  # make sure the office connection (and b._ctx) exists
     ctx = b._ctx
     prov = ctx.ServiceManager.createInstanceWithContext("com.sun.star.script.provider.MasterScriptProviderFactory", ctx).createScriptProvider("")
     script = prov.getScript(macro_url)

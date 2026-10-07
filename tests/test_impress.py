@@ -34,3 +34,18 @@ def test_impress_all():
     i.impress_add_shape(dr, 0, "ellipse", 10, 10, 40, 40, fill="green")
     assert i.impress_list_shapes(dr, 0)
     d.close_document(dr)
+
+
+def test_slide_insert_positions():
+    did = d.create_document("impress")["doc_id"]
+    for t in ("A", "B"):
+        i.impress_add_slide(did, "title_content", t, "x")
+    i.impress_add_slide(did, "title_content", "MID", "x", index=2)
+    i.impress_add_slide(did, "title_content", "FIRST", "x", index=0)
+    titles = [s["title"] for s in i.impress_list_slides(did)]
+    assert titles == ["FIRST", "", "A", "MID", "B"], titles
+    i.impress_add_shape(did, 0, "rectangle", text="label")
+    n = len(i.impress_list_shapes(did, 0)) - 1
+    i.impress_edit_shape(did, 0, n, text="")
+    assert i.impress_list_shapes(did, 0)[n]["text"] == ""
+    d.close_document(did)

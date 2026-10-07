@@ -56,10 +56,12 @@ def impress_add_slide(doc_id: str, layout: str = "title_content", title: str = "
     """Add a slide (layout: title | title_content | title_2content | title_only | blank) and fill the title/body placeholders. Body lines separated by \\n."""
     m = b.need(doc_id, *K)
     pages = m.getDrawPages()
-    pos = pages.getCount() if index < 0 else index
-    if pages.getCount() == 1 and pos == 1 and pages.getByIndex(0).getCount() == 0 and False:
-        pass
-    p = pages.insertNewByIndex(pos - 1 if pos > 0 else 0) if pos > 0 else pages.insertNewByIndex(0)
+    count = pages.getCount()
+    pos = count if index < 0 else min(index, count)
+    # insertNewByIndex(n) puts the new page AFTER page n, so the page lands at n + 1.
+    pages.insertNewByIndex(max(pos - 1, 0))
+    if pos == 0:
+        impress_move_slide(doc_id, 1, 0)  # no "before first" insert exists: move the new page up
     new = pages.getByIndex(pos)
     if m.supportsService("com.sun.star.presentation.PresentationDocument"):
         new.setPropertyValue("Layout", LAYOUTS[layout])
@@ -137,7 +139,7 @@ def _style(s, fill, line_color, line_width_mm, text, size, bold, fg, align, font
         s.setPropertyValue("LineColor", color(line_color))
     if line_width_mm is not None:
         s.setPropertyValue("LineWidth", _mm(line_width_mm))
-    if text:
+    if text is not None:
         s.setString(text)
     if size: s.setPropertyValue("CharHeight", float(size))
     if bold is not None: s.setPropertyValue("CharWeight", 150.0 if bold else 100.0)

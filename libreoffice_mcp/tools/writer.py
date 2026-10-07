@@ -329,9 +329,9 @@ def writer_header_footer(doc_id: str, header: str = None, footer: str = None, pa
     ps = m.getStyleFamilies().getByName("PageStyles").getByName(name)
     for kind, val in (("Header", header), ("Footer", footer)):
         if val is not None:
+            ps.setPropertyValue(f"{kind}IsOn", True)  # the text object is only reliable while the area is on
+            ps.getPropertyValue(f"{kind}Text").setString(val)  # '' really clears old content
             ps.setPropertyValue(f"{kind}IsOn", val != "" or page_numbers == kind.lower())
-            if val != "":
-                ps.getPropertyValue(f"{kind}Text").setString(val)
     if page_numbers in ("header", "footer"):
         kind = page_numbers.capitalize()
         ps.setPropertyValue(f"{kind}IsOn", True)
