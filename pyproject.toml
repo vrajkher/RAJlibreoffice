@@ -1,0 +1,16 @@
+[project]
+name = "libreoffice-mcp"
+version = "0.1.0"
+description = "MCP server exposing LibreOffice (Writer, Calc, Impress, Draw, Base, Math) through UNO"
+requires-python = ">=3.10"
+dependencies = ["mcp>=2"]
+license = { text = "MIT" }
+
+[project.optional-dependencies]
+openai = ["openai-mcp-extensions"]
+
+[project.scripts]
+libreoffice-mcp = "libreoffice_mcp.server:main"
+
+[tool.setuptools]
+packages = ["libreoffice_mcp", "libreoffice_mcp.tools"]
