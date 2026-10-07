@@ -1,8 +1,24 @@
 """MCP server entry point: registers every tool module."""
 import argparse
+import functools
 import importlib
 
 from mcp.server.mcpserver import MCPServer
+
+from .bridge import LOError
+
+def _safe(fn):
+    """Surface UNO and Python errors to the client as readable tool errors."""
+    @functools.wraps(fn)
+    def run(*a, **kw):
+        try:
+            return fn(*a, **kw)
+        except LOError:
+            raise
+        except Exception as e:
+            raise LOError(f"{fn.__name__} failed: {type(e).__name__}: {str(e)[:600]}")
+    return run
+
 
 MODULES = ["guide", "documents", "generic", "writer", "calc", "impress", "base_math"]
 
@@ -23,7 +39,13 @@ def build():
                 continue
             raise
         for fn in mod.TOOLS:
-            server.add_tool(fn)
+            server.add_tool(_safe(fn))
+    try:
+        from .openai_ext import extra_tools
+        for fn, kw in extra_tools():
+            server.add_tool(_safe(fn), **kw)
+    except Exception:
+        pass
     return server
 
 

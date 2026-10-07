@@ -38,7 +38,12 @@ def create_document(kind: str = "writer") -> dict:
     """Create a blank document. kind: writer | calc | impress | draw | base | math."""
     if kind not in NEW_URLS:
         raise b.LOError(f"kind must be one of {sorted(NEW_URLS)}")
-    m = b.desktop().loadComponentFromURL(NEW_URLS[kind], "_blank", 0, b.props(Hidden=True))
+    try:
+        m = b.desktop().loadComponentFromURL(NEW_URLS[kind], "_blank", 0, b.props(Hidden=True))
+    except Exception as e:
+        if "type detection failed" in str(e):
+            raise b.LOError(f"This LibreOffice install lacks the {kind} module (Debian/Ubuntu: apt install libreoffice-{kind}).")
+        raise
     return {"doc_id": b.register_doc(m), "kind": kind}
 
 

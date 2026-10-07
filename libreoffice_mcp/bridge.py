@@ -23,7 +23,10 @@ _handles = {}   # id -> UNO object
 _counter = {"doc": 0, "h": 0}
 
 
-class LOError(Exception):
+from mcp.server.mcpserver.exceptions import ToolError
+
+
+class LOError(ToolError):
     """Error reported to the MCP client."""
 
 
