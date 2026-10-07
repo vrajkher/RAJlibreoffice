@@ -89,6 +89,8 @@ Installed filter options and accepted types vary across LibreOffice versions. Us
 
 `base_connect` uses the document's configured DataSource, installed SDBC drivers and supplied credentials. Use `base_query` with `parameters` for values; table/column identifiers are part of SQL and cannot be parameterized. Result cells are returned as strings or null, preserving a straightforward portable representation. `limit` caps rows at 10,000; `has_more` indicates truncation.
 
+Scalar integers inside the signed 32-bit range bind with `setInt`; larger integers use `setLong`. Strict drivers such as Firebird require the binding type to match the SQL column. Use typed parameters when needed, for example `{"type":"bigint","value":1}` or `{"type":"date","value":{"$struct":"com.sun.star.util.Date","fields":{"Year":2026,"Month":10,"Day":7}}}`. Supported explicit types are boolean, byte, short, int, bigint, float, double, string, date, time, timestamp and bytes.
+
 Query mode requests connection read-only state, but some database drivers do not enforce that setting. Use a database account with SELECT-only privileges when enforcement matters. `write:true` deliberately executes an update. `base_transaction(begin)` disables autocommit; commit/rollback keep it disabled until `autocommit` is requested. DDL transaction behavior is driver-dependent. These SQL transactions are independent of MCP `workflow_run`.
 
 Base forms, reports, query definitions and database document structures are available through their UNO containers/services; they are not dedicated convenience tools. Driver setup, credentials and database availability remain prerequisites.

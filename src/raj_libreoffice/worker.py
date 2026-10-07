@@ -396,6 +396,8 @@ class Office:
         image = doc.createInstance("com.sun.star.text.TextGraphicObject")
         image.Graphic = self.service("com.sun.star.graphic.GraphicProvider").queryGraphic(
             self.props({"URL": self.path(path, True).as_uri()}))
+        if image.Graphic is None:
+            raise ValueError("LibreOffice could not decode this image")
         image.Width, image.Height = width, height
         image.AnchorType = self.uno.Enum("com.sun.star.text.TextContentAnchorType", "AS_CHARACTER")
         doc.Text.insertTextContent(self.cursor(
@@ -559,6 +561,16 @@ class Office:
                  "line": "LineShape", "image": "GraphicObjectShape", "connector": "ConnectorShape"}
         if kind not in names:
             raise ValueError("Unknown shape kind")
+        if kind == "image" and not image_path:
+            raise ValueError("Image shapes require image_path")
+        if image_path and kind != "image":
+            raise ValueError("image_path is only supported for image shapes")
+        graphic = None
+        if image_path:
+            graphic = self.service("com.sun.star.graphic.GraphicProvider").queryGraphic(
+                self.props({"URL": self.path(image_path, True).as_uri()}))
+            if graphic is None:
+                raise ValueError("LibreOffice could not decode this image")
         doc = self.doc(document, "impress,draw")
         shape = doc.createInstance("com.sun.star.drawing." + names[kind])
         position = self.uno.createUnoStruct("com.sun.star.awt.Point")
@@ -571,8 +583,7 @@ class Office:
         if text:
             shape.setString(text)
         if image_path:
-            shape.Graphic = self.service("com.sun.star.graphic.GraphicProvider").queryGraphic(
-                self.props({"URL": self.path(image_path, True).as_uri()}))
+            shape.Graphic = graphic
         self.set_properties(shape, properties)
         return self.handle(shape, document)
 
@@ -633,18 +644,30 @@ class Office:
             statement = conn.prepareStatement(sql)
             statement.setPropertyValue("MaxRows", limit + 1)
             for i, value in enumerate(parameters or [], 1):
-                if value is None:
+                if isinstance(value, dict):
+                    setters = {"boolean": "setBoolean", "byte": "setByte", "short": "setShort",
+                               "int": "setInt", "bigint": "setLong", "float": "setFloat",
+                               "double": "setDouble", "string": "setString", "date": "setDate",
+                               "time": "setTime", "timestamp": "setTimestamp", "bytes": "setBytes"}
+                    kind = value.get("type")
+                    if kind not in setters or "value" not in value:
+                        raise ValueError("Typed SQL parameters need a supported type and value")
+                    self.uno.invoke(statement, setters[kind], (i, self.decode(value["value"])))
+                elif value is None:
                     statement.setNull(i, 0)
                 elif isinstance(value, bool):
                     statement.setBoolean(i, value)
                 elif isinstance(value, int):
-                    statement.setLong(i, value)
+                    if -(2 ** 31) <= value < 2 ** 31:
+                        statement.setInt(i, value)
+                    else:
+                        statement.setLong(i, value)
                 elif isinstance(value, float):
                     statement.setDouble(i, value)
                 elif isinstance(value, str):
                     statement.setString(i, value)
                 else:
-                    raise ValueError("SQL parameters must be scalar values")
+                    raise ValueError("SQL parameters must be scalars or typed parameter objects")
             if write:
                 return {"updated_rows": statement.executeUpdate()}
             result = statement.executeQuery()

@@ -13,7 +13,8 @@ import unittest
 class StdioTests(unittest.TestCase):
     def exercise(self, openai=False):
         with tempfile.TemporaryDirectory() as directory:
-            env = {**os.environ, "RAJ_WORKSPACE": directory, "RAJ_UNO_PYTHON": sys.executable}
+            env = {**os.environ, "RAJ_WORKSPACE": directory, "RAJ_UNO_PYTHON": sys.executable,
+                   "RAJ_ALLOW_ADVANCED": "0", "RAJ_ALLOW_SCRIPTS": "0", "RAJ_ALLOW_PYTHON": "0"}
             command = [sys.executable, "-m", "raj_libreoffice.cli", "serve"]
             if openai:
                 command.append("--openai")
@@ -61,6 +62,21 @@ class StdioTests(unittest.TestCase):
                 self.assertFalse(result["structuredContent"]["result"]["connected"])
                 send("resources/read", {"uri": "libreoffice://coverage"}, 4)
                 self.assertIn("areas", json.loads(receive(4)["contents"][0]["text"]))
+                if openai:
+                    from pathlib import Path
+                    Path(directory, "report.odt").write_text("mention fixture")
+                    send("tools/call", {"name": "settings.read", "arguments": {}}, 5)
+                    self.assertEqual(receive(5)["structuredContent"]["values"]["default_format"], "odt")
+                    send("tools/call", {"name": "settings.update", "arguments": {"set": {
+                        "default_format": "xlsx", "export_pdf_after_save": True}}}, 6)
+                    self.assertEqual(receive(6)["structuredContent"]["values"]["default_format"], "xlsx")
+                    persisted = json.loads(Path(directory, ".raj-preferences.json").read_text())
+                    self.assertTrue(persisted["export_pdf_after_save"])
+                    send("tools/call", {"name": "search_mentions", "arguments": {"query": "report"}}, 7)
+                    item = receive(7)["structuredContent"]["items"][0]
+                    self.assertEqual(item["name"], "report.odt")
+                    send("resources/read", {"uri": item["uri"]}, 8)
+                    self.assertEqual(json.loads(receive(8)["contents"][0]["text"])["path"], "report.odt")
             finally:
                 process.stdin.close()
                 try:

@@ -68,6 +68,6 @@ One server process owns one UNO worker and serializes calls. It is suitable for 
 - “Unknown handle”: reopen the document after worker restart; handles cannot survive restart.
 - Timeout: inspect the output files before retrying a write. The operation may already have completed. On POSIX the worker process group is killed to clean up its spawned office.
 - Missing service/driver: install the relevant LibreOffice component, database driver or extension, then restart the office worker.
-- Wrong import in OpenAI mode: use its separate virtualenv and install `.[openai]` with `--pre`. Standard and OpenAI modes use different MCP SDK generations.
+- Wrong import in OpenAI mode: use its separate virtualenv and install `.[openai]`. OpenAI mode requires MCP 2; standard mode supports either MCP SDK generation.
 - Layout or fonts differ: install the original fonts and compare exported files in a viewer. Document generation cannot guarantee pixel-identical Microsoft Office conversion.
 

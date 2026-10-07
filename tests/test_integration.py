@@ -128,17 +128,24 @@ class LibreOfficeTests(unittest.TestCase):
             self.call("uno_inspect", object=doc)
 
     def test_typed_any_values_metadata_images_styles_and_pdf_options(self):
-        import base64
+        import struct
+        import zlib
         image = self.root / "pixel.png"
-        image.write_bytes(base64.b64decode(
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jWZkAAAAASUVORK5CYII="))
+
+        def chunk(kind, data):
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+
+        image.write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+                          + chunk(b"IDAT", zlib.compress(b"\x00\xff\x00\x00")) + chunk(b"IEND", b""))
         doc = self.new("writer")
         self.call("writer_insert", document=doc, text="Styled document\n")
         self.assertIn("ParagraphStyles", self.call("style_list", document=doc))
         styles = self.call("style_list", document=doc, family="ParagraphStyles")
         self.call("style_update", document=doc, family="ParagraphStyles", name=styles[0],
                   properties={"CharHeight": 14.0})
-        self.call("writer_image", document=doc, path="pixel.png", width=1000, height=1000)
+        picture = self.call("writer_image", document=doc, path="pixel.png", width=1000, height=1000)["$ref"]
+        graphic = self.call("uno_get", object=picture, name="Graphic")["$ref"]
+        self.assertNotEqual(self.call("uno_call", object=graphic, method="getType"), 0)
         self.call("document_metadata", document=doc, values={
             "Keywords": ["MCP", "UNO"],
             "Language": {"$struct": "com.sun.star.lang.Locale", "fields": {"Language": "en", "Country": "US"}}})

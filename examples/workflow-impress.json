@@ -1,0 +1,60 @@
+{
+  "steps": [
+    {
+      "id": "new",
+      "tool": "document_create",
+      "arguments": {
+        "kind": "impress"
+      }
+    },
+    {
+      "id": "title",
+      "tool": "presentation_shape",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "page": 0,
+        "kind": "text",
+        "text": "RAJ LibreOffice MCP",
+        "x": 1000,
+        "y": 1000,
+        "width": 22000,
+        "height": 4000,
+        "properties": {
+          "CharHeight": 30.0
+        }
+      }
+    },
+    {
+      "id": "notes",
+      "tool": "presentation_notes",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "page": 0,
+        "text": "Welcome to the LibreOffice automation demo."
+      }
+    },
+    {
+      "id": "save",
+      "tool": "document_save",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "path": "introduction.odp"
+      }
+    }
+  ]
+}

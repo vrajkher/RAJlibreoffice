@@ -1,0 +1,91 @@
+{
+  "steps": [
+    {
+      "id": "new",
+      "tool": "document_create",
+      "arguments": {
+        "kind": "calc"
+      }
+    },
+    {
+      "id": "data",
+      "tool": "calc_write",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "sheet": 0,
+        "range": "A1:B4",
+        "data": [
+          [
+            "Month",
+            "Revenue"
+          ],
+          [
+            "January",
+            1200
+          ],
+          [
+            "February",
+            1800
+          ],
+          [
+            "March",
+            2200
+          ]
+        ]
+      }
+    },
+    {
+      "id": "total",
+      "tool": "calc_write",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "sheet": 0,
+        "range": "B5:B5",
+        "data": [
+          [
+            "=SUM(B2:B4)"
+          ]
+        ],
+        "formulas": true
+      }
+    },
+    {
+      "id": "chart",
+      "tool": "calc_chart",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "sheet": 0,
+        "range": "A1:B4",
+        "name": "Revenue"
+      }
+    },
+    {
+      "id": "save",
+      "tool": "document_save",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "path": "revenue.ods"
+      }
+    }
+  ]
+}

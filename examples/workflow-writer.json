@@ -1,0 +1,91 @@
+{
+  "steps": [
+    {
+      "id": "new",
+      "tool": "document_create",
+      "arguments": {
+        "kind": "writer"
+      }
+    },
+    {
+      "id": "text",
+      "tool": "writer_insert",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "text": "Project report\nPrepared with RAJ LibreOffice MCP.\n"
+      }
+    },
+    {
+      "id": "title",
+      "tool": "writer_format",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "start": 0,
+        "length": 14,
+        "properties": {
+          "CharHeight": 22.0,
+          "CharWeight": 150.0
+        }
+      }
+    },
+    {
+      "id": "table",
+      "tool": "writer_table",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "data": [
+          [
+            "Task",
+            "Status"
+          ],
+          [
+            "Document automation",
+            "Complete"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "save",
+      "tool": "document_save",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "path": "project-report.odt"
+      }
+    },
+    {
+      "id": "pdf",
+      "tool": "document_save",
+      "arguments": {
+        "document": {
+          "$step": "new",
+          "path": [
+            "document"
+          ]
+        },
+        "path": "project-report.pdf",
+        "export": true
+      }
+    }
+  ]
+}
