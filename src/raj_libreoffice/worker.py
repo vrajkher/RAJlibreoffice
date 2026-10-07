@@ -629,7 +629,10 @@ class Office:
         return self.handle(connection, document)
 
     def base_tables(self, connection):
-        return list(self.ref(connection).getTables().getElementNames())
+        tables = self.ref(connection).getTables()
+        if hasattr(tables, "refresh"):
+            tables.refresh()
+        return list(tables.getElementNames())
 
     def base_query(self, connection, sql, parameters=None, limit=1000, write=False):
         if not 1 <= limit <= 10000:
