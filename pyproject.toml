@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raj-libreoffice-mcp"
+version = "0.1.0"
+description = "Structured LibreOffice automation over MCP, powered by UNO"
+requires-python = ">=3.10"
+dependencies = ["mcp>=1.29,<3", "pydantic>=2.12,<3"]
+license = "MIT"
+
+[project.optional-dependencies]
+openai = ["openai-mcp-extensions==0.1.0", "mcp>=2.0.0b2,<3"]
+dev = ["pytest>=8", "ruff>=0.12"]
+
+[project.scripts]
+raj-libreoffice = "raj_libreoffice.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+raj_libreoffice = ["*.json", "*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires LibreOffice and a Python interpreter with PyUNO"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+

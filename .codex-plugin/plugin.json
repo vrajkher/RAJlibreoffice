@@ -1,0 +1,21 @@
+{
+  "name": "raj-libreoffice",
+  "version": "0.1.0",
+  "description": "Read, edit and export LibreOffice documents with Python UNO and structured MCP tools.",
+  "author": {"name": "vrajkher"},
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "extensions": {"com.openai": {"onboardingSkill": "./skills/onboarding/SKILL.md"}},
+  "interface": {
+    "displayName": "RAJ LibreOffice",
+    "shortDescription": "Create, edit and export office documents",
+    "longDescription": "Structured Writer, Calc, Impress, Draw, Math and Base tools, with installed UNO API discovery and optional trusted automation.",
+    "developerName": "vrajkher",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg",
+    "defaultPrompt": ["@RAJ LibreOffice help me create and edit an office document."]
+  }
+}
+

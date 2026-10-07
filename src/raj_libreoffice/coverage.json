@@ -1,0 +1,252 @@
+{
+  "version": "0.1.0",
+  "claim": "Common workflows have dedicated tools; generic UNO exposes additional installed APIs. This is not exhaustive tested coverage.",
+  "verification": "See GitHub Actions results. Local authoring environment lacked LibreOffice and optional OpenAI SDK.",
+  "areas": [
+    {
+      "area": "Documents",
+      "features": "Creation, opening, metadata, save, export, close, undo",
+      "availability": "dedicated",
+      "entrypoints": "document_*; filter_list",
+      "verification": "Roundtrip and overwrite integration tests"
+    },
+    {
+      "area": "Writer body",
+      "features": "Read, insert, replace, character and paragraph formatting",
+      "availability": "dedicated",
+      "entrypoints": "writer_read/insert/replace/format",
+      "verification": "Writer roundtrip test"
+    },
+    {
+      "area": "Writer structures",
+      "features": "Tables, bookmarks, fields, images, styles",
+      "availability": "dedicated",
+      "entrypoints": "writer_table/bookmark/field/image; style_*",
+      "verification": "Tables/bookmarks/fields covered; images/styles need more tests"
+    },
+    {
+      "area": "Writer advanced text",
+      "features": "Headers/footers, sections, frames, footnotes, endnotes",
+      "availability": "generic UNO",
+      "entrypoints": "Text, TextSections, TextFrames, Footnotes, Endnotes, PageStyles",
+      "verification": "Recipes only; not integration verified"
+    },
+    {
+      "area": "Writer review",
+      "features": "Comments, tracked changes, redlines, text comparisons",
+      "availability": "generic UNO",
+      "entrypoints": "Annotation fields; Redlines and document comparison APIs/dispatch",
+      "verification": "Not integration verified"
+    },
+    {
+      "area": "Writer publishing",
+      "features": "Indexes/TOC, mail merge, templates, linked content",
+      "availability": "generic UNO",
+      "entrypoints": "ContentIndex, DocumentIndexes, MailMerge, document/template APIs",
+      "verification": "Not integration verified"
+    },
+    {
+      "area": "Calc cells",
+      "features": "Values, formulas, formats, clear/merge, recalculate",
+      "availability": "dedicated",
+      "entrypoints": "calc_read/write/format/clear/merge/recalculate",
+      "verification": "Values/formulas/format roundtrip test"
+    },
+    {
+      "area": "Calc sheets",
+      "features": "List, add, remove, rename, move, copy",
+      "availability": "dedicated",
+      "entrypoints": "calc_sheets",
+      "verification": "Add and list covered; remaining actions need more tests"
+    },
+    {
+      "area": "Calc analysis",
+      "features": "Sorting, named ranges, default chart creation",
+      "availability": "dedicated",
+      "entrypoints": "calc_sort/named_range/chart",
+      "verification": "Calc integration test"
+    },
+    {
+      "area": "Calc advanced analysis",
+      "features": "Filters, pivots, subtotals, solver, goal seek",
+      "availability": "generic UNO",
+      "entrypoints": "FilterDescriptor, DataPilotTables, SubTotalDescriptor, Solver, GoalSeek",
+      "verification": "Not integration verified; solver component dependent"
+    },
+    {
+      "area": "Calc rules",
+      "features": "Validation, conditional formatting, protection, annotations",
+      "availability": "generic UNO",
+      "entrypoints": "Validation, ConditionalFormat, protect/unprotect, annotations",
+      "verification": "Not integration verified"
+    },
+    {
+      "area": "Calc charts",
+      "features": "Chart type, axes, legends, data providers, series formatting",
+      "availability": "generic UNO",
+      "entrypoints": "Returned chart object; Chart2 services and suppliers",
+      "verification": "Default creation tested; advanced styles unverified"
+    },
+    {
+      "area": "Calc functions",
+      "features": "Function evaluation, add-ins, matrix and array formulas",
+      "availability": "generic UNO",
+      "entrypoints": "FunctionAccess; XArrayFormulaRange; installed add-ins",
+      "verification": "Formula cells tested; arbitrary functions/add-ins unverified"
+    },
+    {
+      "area": "Impress/Draw pages",
+      "features": "Page/slide management, text, shapes and images",
+      "availability": "dedicated",
+      "entrypoints": "presentation_pages/shape/read",
+      "verification": "Text/shape native save tests; image and page actions need more tests"
+    },
+    {
+      "area": "Impress notes",
+      "features": "Read and write speaker notes",
+      "availability": "dedicated",
+      "entrypoints": "presentation_notes",
+      "verification": "Notes integration test"
+    },
+    {
+      "area": "Impress advanced",
+      "features": "Masters, transitions, animations, custom shows, slideshow",
+      "availability": "generic UNO / desktop dependent",
+      "entrypoints": "MasterPages; AnimationNode; CustomPresentationSupplier; Presentation",
+      "verification": "Not integration verified; playback needs desktop"
+    },
+    {
+      "area": "Draw advanced",
+      "features": "Groups, paths, connectors, layers, transformations, embedded objects",
+      "availability": "generic UNO",
+      "entrypoints": "drawing services and shape interfaces",
+      "verification": "Basic shape tested; advanced interfaces unverified"
+    },
+    {
+      "area": "Math",
+      "features": "Read/write StarMath formulas and native storage",
+      "availability": "dedicated",
+      "entrypoints": "math_formula; document_save",
+      "verification": "Formula/native save integration test"
+    },
+    {
+      "area": "Base SQL",
+      "features": "Connect, list tables, prepared queries/updates, transactions",
+      "availability": "dedicated",
+      "entrypoints": "base_connect/tables/query/transaction",
+      "verification": "Embedded Firebird integration test"
+    },
+    {
+      "area": "Base documents",
+      "features": "Data sources, query definitions, forms, reports",
+      "availability": "generic UNO",
+      "entrypoints": "DataSource; CommandDefinitions; FormDocuments; ReportDocuments",
+      "verification": "DataSource/SQL tested; forms/reports unverified"
+    },
+    {
+      "area": "Base drivers",
+      "features": "Firebird, JDBC, ODBC, PostgreSQL/MySQL and other SDBC backends",
+      "availability": "installation dependent",
+      "entrypoints": "Installed SDBC services, driver packages and credentials",
+      "verification": "Only embedded Firebird integration fixture"
+    },
+    {
+      "area": "Import/export",
+      "features": "Common ODF/OOXML/PDF/text/HTML formats; discovery of all installed filters",
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "document_save; filter_list; storeToURL/storeAsURL",
+      "verification": "ODF/PDF integration; other conversions unverified"
+    },
+    {
+      "area": "PDF options",
+      "features": "Page selection, PDF/A versions, forms, bookmarks, tagging",
+      "availability": "generic export options",
+      "entrypoints": "FilterData through document_save or UNO filters",
+      "verification": "Basic PDF tested; individual options unverified"
+    },
+    {
+      "area": "Images/rendering",
+      "features": "Embedded graphics; page/image export",
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "GraphicProvider; GraphicExportFilter",
+      "verification": "Image embedding/graphic export need further tests"
+    },
+    {
+      "area": "Printing",
+      "features": "Printer selection, job settings, print submission",
+      "availability": "generic UNO / host dependent",
+      "entrypoints": "XPrintable; .uno:Print; printer properties",
+      "verification": "No dedicated print tool; requires configured printer; unverified"
+    },
+    {
+      "area": "Security/signatures",
+      "features": "Document protection, encryption, digital signatures, certificates",
+      "availability": "generic UNO / host dependent",
+      "entrypoints": "protect/unprotect; export Password; document digital signature services",
+      "verification": "Not integration verified; certificates and target-reader validation required"
+    },
+    {
+      "area": "Forms/controls",
+      "features": "Document form controls, binding, events",
+      "availability": "generic UNO",
+      "entrypoints": "form/control services; DrawPage Forms",
+      "verification": "Not integration verified"
+    },
+    {
+      "area": "Accessibility/localization",
+      "features": "Accessible trees, spellcheck, dictionaries, language tools",
+      "availability": "generic UNO / GUI dependent",
+      "entrypoints": "Accessible contexts; linguistic2 services; installed dictionaries",
+      "verification": "Not integration verified; GUI availability varies"
+    },
+    {
+      "area": "Extensions/configuration",
+      "features": "Discover/instantiate installed services and configuration APIs",
+      "availability": "generic UNO",
+      "entrypoints": "uno_services; uno_service; ConfigurationProvider; PackageInformationProvider",
+      "verification": "Service discovery tested; modifications unverified"
+    },
+    {
+      "area": "SDK/reflection",
+      "features": "Methods, properties, runtime types, structs, enums, Any, sequences",
+      "availability": "dedicated",
+      "entrypoints": "uno_inspect/type/get/set/call/service",
+      "verification": "Reflection and Point struct integration test; more types needed"
+    },
+    {
+      "area": "Scripts",
+      "features": "Installed Basic/Python scripts",
+      "availability": "optional trusted automation",
+      "entrypoints": "script_run with ScriptProvider URI",
+      "verification": "Registration/gating tested; providers/macros unverified"
+    },
+    {
+      "area": "Python",
+      "features": "Arbitrary trusted automation using PyUNO and standard Python",
+      "availability": "optional trusted automation",
+      "entrypoints": "python_run",
+      "verification": "Integration test edits text and returns result"
+    },
+    {
+      "area": "OpenAI extensions",
+      "features": "Composer file mentions and native settings",
+      "availability": "optional SDK integration",
+      "entrypoints": "OpenAIExtensions; OpenAISettings; document_save_preferred",
+      "verification": "Separate OpenAI CI registration test; host UX unverified"
+    },
+    {
+      "area": "MCP workflow",
+      "features": "Ordered dependent operations, resources, editing prompt",
+      "availability": "dedicated",
+      "entrypoints": "workflow_run; libreoffice://guide/tools/coverage; edit_document",
+      "verification": "Unit and MCP schema tests"
+    },
+    {
+      "area": "GUI/cloud hosting",
+      "features": "Interactive dialogs, browser document editor, authenticated remote multi-user sessions",
+      "availability": "not implemented",
+      "entrypoints": "External application/hosting work required",
+      "verification": "No coverage claim"
+    }
+  ]
+}
