@@ -57,7 +57,7 @@ Windows distribution/ABI discovery and child-process cleanup have not been integ
 
 ## Transport and deployment
 
-Stdio is the default and recommended local transport. Standard mode also supports `--transport streamable-http` on loopback `127.0.0.1:8000`, path `/mcp`. It has no built-in authentication and must stay local. A remote deployment needs an authenticated gateway, TLS, per-user process/workspace isolation and a persistent office runtime; those are not supplied by this repository.
+Stdio is the default local transport. Both modes support `--transport streamable-http` at `/mcp`, with explicit bearer authentication. See [HTTP setup](HTTP.md). Containers and Compose bundle the office runtime and persistent storage; public hosting still needs TLS and a suitable client.
 
 One server process owns one UNO worker and serializes calls. It is suitable for one trusted user. It does not provide separate sessions for different remote users or parallel manipulation of the same office process.
 

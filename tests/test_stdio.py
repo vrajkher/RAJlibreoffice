@@ -77,6 +77,12 @@ class StdioTests(unittest.TestCase):
                     self.assertEqual(item["name"], "report.odt")
                     send("resources/read", {"uri": item["uri"]}, 8)
                     self.assertEqual(json.loads(receive(8)["contents"][0]["text"])["path"], "report.odt")
+                    send("tools/call", {"name": "office_workspace", "arguments": {}}, 9)
+                    self.assertEqual(receive(9)["structuredContent"]["files"][0]["path"], "report.odt")
+                    send("resources/read", {"uri": "ui://libreoffice/workspace"}, 10)
+                    panel = receive(10)["contents"][0]
+                    self.assertEqual(panel["mimeType"], "text/html;profile=mcp-app")
+                    self.assertIn("RAJ LibreOffice", panel["text"])
             finally:
                 process.stdin.close()
                 try:

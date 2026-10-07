@@ -17,7 +17,7 @@ def create_server(config: Config | None = None, *, openai: bool = False):
             from mcp.server.fastmcp import FastMCP
             from mcp.types import ToolAnnotations
             server_type = FastMCP
-            options = {"host": "127.0.0.1"}
+            options = {"host": config.http_host}
         except ImportError:
             from mcp.server.mcpserver import MCPServer
             from mcp_types import ToolAnnotations

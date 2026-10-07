@@ -19,12 +19,15 @@ class Preferences(BaseModel):
 
 def make_openai_server(bridge):
     try:
+        from mcp.server.apps import Apps, APP_MIME_TYPE
+        from mcp.server.mcpserver.resources import TextResource
         from mcp.server.mcpserver import MCPServer
         from mcp.server.mcpserver.context import Context
         from mcp_types import ResourceLink, ToolAnnotations
         from openai_mcp_extensions import (
             OpenAIExtensions, OpenAIMentionSearchParams, OpenAIMentionSearchResult,
-            OpenAISettings,
+            OpenAISettings, OpenAIGlobalEntrypoint, OpenAIThreadEntrypoint,
+            OpenAIUiToolMetadata, OpenAIUiResourceMetadata,
         )
     except ImportError as error:
         raise RuntimeError(
@@ -41,6 +44,37 @@ def make_openai_server(bridge):
         if preferences_file.exists():
             return Preferences.model_validate_json(preferences_file.read_text())
         return Preferences(default_format="native", export_pdf_after_save=False)
+
+    from pathlib import Path
+    apps = Apps()
+    apps.add_resource(TextResource(
+        uri="ui://libreoffice/workspace", name="LibreOffice workspace", mime_type=APP_MIME_TYPE,
+        text=Path(__file__).with_name("panel.html").read_text(encoding="utf-8"),
+        meta={"openai/ui": OpenAIUiResourceMetadata(
+            preferred_display_mode="fullscreen", available_display_modes=["inline", "fullscreen"]
+        ).model_dump(by_alias=True, exclude_none=True)},
+    ))
+
+    @apps.tool(resource_uri="ui://libreoffice/workspace", meta={
+        "openai/ui": OpenAIUiToolMetadata(entrypoints=[
+            OpenAIGlobalEntrypoint(), OpenAIThreadEntrypoint()
+        ]).model_dump(by_alias=True, exclude_none=True),
+    })
+    def office_workspace() -> dict[str, Any]:
+        """Open a simple LibreOffice workspace panel for creating, reading, editing and saving documents."""
+        from .config import workspace_path
+        files = []
+        for path in sorted(bridge.config.workspace.iterdir()):
+            if path.name.startswith("."):
+                continue
+            try:
+                safe = workspace_path(bridge.config.workspace, str(path), exists=True)
+            except (ValueError, FileNotFoundError):
+                continue
+            files.append({"path": path.name, "bytes": safe.stat().st_size})
+            if len(files) >= 100:
+                break
+        return {"files": files, "documents": bridge.call("status")["documents"]}
 
     extensions = OpenAIExtensions()
     settings = OpenAISettings(schema=Preferences)
@@ -81,7 +115,7 @@ def make_openai_server(bridge):
                                 "context": Context[Any, Any],
                                 "return": OpenAIMentionSearchResult}
     extensions.mentions.search(mentions)
-    server = MCPServer("RAJ LibreOffice", extensions=[extensions, settings],
+    server = MCPServer("RAJ LibreOffice", extensions=[apps, extensions, settings],
                        middleware=[settings.advertise_legacy_capability])
 
     @server.tool()

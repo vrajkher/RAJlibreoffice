@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -17,6 +17,9 @@ class Config:
     python_execution: bool = False
     max_cells: int = 100000
     max_text: int = 1000000
+    http_host: str = "127.0.0.1"
+    http_port: int = 8000
+    bearer_token: str = field(default="", repr=False)
 
     @classmethod
     def from_env(cls):
@@ -29,10 +32,14 @@ class Config:
             advanced=os.getenv("RAJ_ALLOW_ADVANCED", "0") == "1",
             scripts=os.getenv("RAJ_ALLOW_SCRIPTS", "0") == "1",
             python_execution=os.getenv("RAJ_ALLOW_PYTHON", "0") == "1",
+            http_host=os.getenv("RAJ_HTTP_HOST", "127.0.0.1"),
+            http_port=int(os.getenv("RAJ_HTTP_PORT", "8000")),
+            bearer_token=os.getenv("RAJ_BEARER_TOKEN", ""),
         )
 
     def wire(self):
-        return {**self.__dict__, "workspace": str(self.workspace)}
+        return {**{k: v for k, v in self.__dict__.items() if k != "bearer_token"},
+                "workspace": str(self.workspace)}
 
 
 def workspace_path(root: Path, value: str, *, exists: bool = False) -> Path:

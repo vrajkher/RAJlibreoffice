@@ -8,3 +8,8 @@ build/
 dist/
 workspace/
 
+node_modules/
+.env
+.env.*
+!.env.example
+.venv-*/

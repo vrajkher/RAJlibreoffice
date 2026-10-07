@@ -1,0 +1,24 @@
+services:
+  libreoffice:
+    build:
+      context: .
+      args:
+        OPENAI: '1'
+    init: true
+    command: [serve, --openai, --transport, streamable-http]
+    ports: ["127.0.0.1:8000:8000"]
+    environment:
+      RAJ_HTTP_HOST: 0.0.0.0
+      RAJ_BEARER_TOKEN: ${RAJ_BEARER_TOKEN:?Generate a 32+ character token in your private .env file}
+      RAJ_ALLOW_ADVANCED: ${RAJ_ALLOW_ADVANCED:-0}
+      RAJ_ALLOW_SCRIPTS: ${RAJ_ALLOW_SCRIPTS:-0}
+      RAJ_ALLOW_PYTHON: ${RAJ_ALLOW_PYTHON:-0}
+    volumes: ["documents:/workspace"]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  documents:

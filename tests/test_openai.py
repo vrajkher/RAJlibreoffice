@@ -19,6 +19,7 @@ class OpenAIExtensionTests(unittest.IsolatedAsyncioTestCase):
                 self.assertIn("settings.update", names)
                 self.assertIn("document_save_preferred", names)
                 self.assertIn("document_create", names)
+                self.assertIn("office_workspace", names)
                 self.assertNotIn("python_run", names)
                 self.assertGreaterEqual(len(await server.list_resources()), 3)
             finally:

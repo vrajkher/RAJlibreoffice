@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from .bridge import Bridge, OfficeError
 from .config import workspace_path
 from .worker import OPERATIONS, Office
+from .features import FEATURES
 
 
 DESCRIPTIONS = {
@@ -45,7 +46,7 @@ DESCRIPTIONS = {
     "calc_named_range": "Define a Calc named range or expression with a zero-based reference address.",
     "calc_sort": "Sort a Calc range by a zero-based column offset within that range.",
     "presentation_pages": "List, insert or remove Impress slides or Draw pages using zero-based indexes.",
-    "presentation_shape": "Add text, rectangle, ellipse, line, image or connector shape to an Impress/Draw page.",
+    "presentation_shape": "Add text, rectangle, ellipse, line, image, connector, polygon, polyline, Bezier, custom or OLE shape to an Impress/Draw page.",
     "presentation_read": "Read page shapes and their text; returns live UNO object handles for editing.",
     "presentation_notes": "Read or replace an Impress slide's notes text.",
     "math_formula": "Read or replace a Math formula using StarMath notation.",
@@ -66,7 +67,9 @@ DESCRIPTIONS = {
     "handles_release": "Release temporary UNO object handles; close documents with document_close instead.",
 }
 
-ADVANCED = {"uno_get", "uno_set", "uno_call", "uno_service", "uno_dispatch", "script_run", "python_run"}
+DESCRIPTIONS.update(FEATURES)
+
+ADVANCED = {"uno_get", "uno_set", "uno_call", "uno_service", "uno_dispatch", "script_run", "python_run", "writer_mail_merge"}
 READ_ONLY = {"status", "document_list", "document_info", "filter_list", "writer_read", "style_list",
              "calc_read", "presentation_read", "base_tables", "uno_inspect", "uno_services", "uno_type"}
 
@@ -88,8 +91,11 @@ def expected_errors(fn):
 STRING_ARGS = {"document", "path", "kind", "search", "replacement", "family", "name", "range",
                "action", "new_name", "number_format", "content", "formula", "connection", "user",
                "password", "sql", "object", "method", "service", "command", "uri", "code", "query",
-               "image_path", "format", "text"}
-DICT_ARGS = {"properties", "values", "options"}
+               "image_path", "format", "text", "style", "author", "parent", "cell", "output",
+               "diagram", "title", "subtitle", "node", "word", "language", "country",
+               "formula_cell", "variable_cell", "target", "header", "footer", "comment", "filter_name",
+               "template", "database", "table", "output_directory", "prefix", "objective"}
+DICT_ARGS = {"properties", "values", "options", "background", "printer"}
 
 
 def tool_signature(method):
@@ -101,16 +107,20 @@ def tool_signature(method):
             annotation = str | int
         elif name == "data":
             annotation = list[list[Any]]
-        elif name in {"arguments", "parameters"}:
+        elif name in {"arguments", "parameters", "fields", "entries", "columns", "variables", "constraints"}:
             annotation = list[Any]
+        elif name == "indexes":
+            annotation = list[int]
+        elif name in {"record", "visible", "legend"}:
+            annotation = bool
         elif name == "handles":
             annotation = list[str]
         elif name in DICT_ARGS:
             annotation = dict[str, Any]
-        elif name in STRING_ARGS:
-            annotation = str
         elif isinstance(param.default, bool):
             annotation = bool
+        elif name in STRING_ARGS or (name == "column" and method.__name__ == "writer_database_field"):
+            annotation = str
         else:
             annotation = int
         if param.default is None:

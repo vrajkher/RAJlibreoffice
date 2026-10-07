@@ -43,12 +43,11 @@ def main():
     from .server import create_server
     server, bridge = create_server(config, openai=args.openai)
     try:
-        if args.openai:
-            if args.transport != "stdio":
-                parser.error("OpenAI mode currently supports stdio; remote deployment requires a separate authenticated host")
-            server.run(transport="stdio")
+        if args.transport == "streamable-http":
+            from .http import run_http
+            run_http(server, config)
         else:
-            server.run(transport=args.transport)
+            server.run(transport="stdio")
     finally:
         bridge.close()
 

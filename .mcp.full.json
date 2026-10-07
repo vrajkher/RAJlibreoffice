@@ -1,0 +1,1 @@
+{"mcpServers":{"libreoffice":{"command":"./.venv-openai/bin/raj-libreoffice","args":["serve","--openai"],"cwd":".","env":{"RAJ_WORKSPACE":"./workspace","RAJ_UNO_PYTHON":"/usr/bin/python3","RAJ_ALLOW_ADVANCED":"1","RAJ_ALLOW_SCRIPTS":"1","RAJ_ALLOW_PYTHON":"1"}}}}

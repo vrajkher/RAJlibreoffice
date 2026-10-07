@@ -6,7 +6,7 @@ import unittest
 
 from raj_libreoffice.bridge import Bridge, OfficeError
 from raj_libreoffice.config import Config, workspace_path
-from raj_libreoffice.tools import DESCRIPTIONS, Step, register_tools, resolve_steps, tool_signature
+from raj_libreoffice.tools import ADVANCED, DESCRIPTIONS, Step, register_tools, resolve_steps, tool_signature
 from raj_libreoffice.worker import OPERATIONS, Office
 
 
@@ -136,7 +136,7 @@ class StandardMCPTests(unittest.IsolatedAsyncioTestCase):
             try:
                 tools = await server.list_tools()
                 names = {t.name for t in tools}
-                self.assertEqual(len(names), 45)
+                self.assertEqual(len(names), len(OPERATIONS) - len(ADVANCED) + 2)
                 calc = next(t for t in tools if t.name == "calc_write")
                 schema = calc.model_dump(by_alias=True)["inputSchema"]
                 self.assertEqual(set(schema["required"]), {"document", "sheet", "range", "data"})

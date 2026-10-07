@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "raj-libreoffice-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "Structured LibreOffice automation over MCP, powered by UNO"
 requires-python = ">=3.10"
 dependencies = ["mcp>=1.30,<3", "pydantic>=2.12,<3"]
@@ -21,7 +21,7 @@ raj-libreoffice = "raj_libreoffice.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-raj_libreoffice = ["*.json", "*.html"]
+raj_libreoffice = ["*.json", "*.html", "*.txt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

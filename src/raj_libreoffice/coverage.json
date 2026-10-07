@@ -1,7 +1,7 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "claim": "Common workflows have dedicated tools; generic UNO exposes additional installed APIs. This is not exhaustive tested coverage.",
-  "verification": "See GitHub Actions results. Local authoring environment lacked LibreOffice and optional OpenAI SDK.",
+  "verification": "Real integration tests run in a LibreOffice container and GitHub Actions; native SDK registration, stdio, HTTP and browser panel tests are separate. Consult the Actions results for the tested commit.",
   "areas": [
     {
       "area": "Documents",
@@ -22,28 +22,28 @@
       "features": "Tables, bookmarks, fields, images, styles",
       "availability": "dedicated",
       "entrypoints": "writer_table/bookmark/field/image; style_*",
-      "verification": "Tables/bookmarks/fields/images/style editing covered; broader structures use generic UNO"
+      "verification": "Tables/bookmarks/fields/images/style editing and style creation covered by integration tests"
     },
     {
       "area": "Writer advanced text",
       "features": "Headers/footers, sections, frames, footnotes, endnotes",
-      "availability": "generic UNO",
-      "entrypoints": "Text, TextSections, TextFrames, Footnotes, Endnotes, PageStyles",
-      "verification": "Recipes only; not integration verified"
+      "availability": "dedicated",
+      "entrypoints": "writer_page; writer_structure",
+      "verification": "Headers/footers and section/frame/footnote/endnote ODT roundtrip"
     },
     {
       "area": "Writer review",
       "features": "Comments, tracked changes, redlines, text comparisons",
-      "availability": "generic UNO",
-      "entrypoints": "Annotation fields; Redlines and document comparison APIs/dispatch",
-      "verification": "Not integration verified"
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "writer_review; generic redline/dispatch APIs",
+      "verification": "Annotation insertion and tracked-change recording/listing tested; accepting/rejecting/comparison use generic UNO and remain unverified"
     },
     {
       "area": "Writer publishing",
       "features": "Indexes/TOC, mail merge, templates, linked content",
-      "availability": "generic UNO",
-      "entrypoints": "ContentIndex, DocumentIndexes, MailMerge, document/template APIs",
-      "verification": "Not integration verified"
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "writer_structure(toc); writer_refresh; writer_database_field; writer_mail_merge; document_from_template",
+      "verification": "TOC creation, templates, database fields and local Firebird file mail merge tested; linked content unverified"
     },
     {
       "area": "Calc cells",
@@ -69,37 +69,37 @@
     {
       "area": "Calc advanced analysis",
       "features": "Filters, pivots, subtotals, solver, goal seek",
-      "availability": "generic UNO",
-      "entrypoints": "FilterDescriptor, DataPilotTables, SubTotalDescriptor, Solver, GoalSeek",
-      "verification": "Not integration verified; solver component dependent"
+      "availability": "dedicated",
+      "entrypoints": "calc_filter/pivot/subtotals/solver/goal_seek",
+      "verification": "Filter row visibility, pivot aggregation, subtotals, goal-seek proposal and linear solver result tested; alternate solver engines remain installation dependent"
     },
     {
       "area": "Calc rules",
       "features": "Validation, conditional formatting, protection, annotations",
-      "availability": "generic UNO",
-      "entrypoints": "Validation, ConditionalFormat, protect/unprotect, annotations",
-      "verification": "Not integration verified"
+      "availability": "dedicated",
+      "entrypoints": "calc_validation/conditional/protect/annotation",
+      "verification": "Validation and annotation ODS roundtrip; conditional rule count and protection toggling tested"
     },
     {
       "area": "Calc charts",
       "features": "Chart type, axes, legends, data providers, series formatting",
-      "availability": "generic UNO",
-      "entrypoints": "Returned chart object; Chart2 services and suppliers",
-      "verification": "Default creation tested; advanced styles unverified"
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "calc_chart; calc_chart_configure; Chart2 services",
+      "verification": "Default chart, BarDiagram/title/legend configuration tested; axes/data providers/series remain generic and unverified"
     },
     {
       "area": "Calc functions",
       "features": "Function evaluation, add-ins, matrix and array formulas",
-      "availability": "generic UNO",
-      "entrypoints": "FunctionAccess; XArrayFormulaRange; installed add-ins",
-      "verification": "Formula cells tested; arbitrary functions/add-ins unverified"
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "calc_function; calc_array_formula; installed add-ins",
+      "verification": "Numeric-array SUM, formula cells and matrix results tested; arbitrary functions/add-ins unverified"
     },
     {
       "area": "Impress/Draw pages",
       "features": "Page/slide management, text, shapes and images",
       "availability": "dedicated",
       "entrypoints": "presentation_pages/shape/read",
-      "verification": "Text/shape native save tests; image and page actions need more tests"
+      "verification": "Text/shape saves, page addition/removal and shape edits tested; presentation images unverified"
     },
     {
       "area": "Impress notes",
@@ -111,16 +111,16 @@
     {
       "area": "Impress advanced",
       "features": "Masters, transitions, animations, custom shows, slideshow",
-      "availability": "generic UNO / desktop dependent",
-      "entrypoints": "MasterPages; AnimationNode; CustomPresentationSupplier; Presentation",
-      "verification": "Not integration verified; playback needs desktop"
+      "availability": "dedicated + generic UNO / desktop dependent",
+      "entrypoints": "presentation_masters/page_configure/custom_shows; AnimationNode; Presentation",
+      "verification": "Masters, page configuration, transition property acceptance and custom-show order/count tested; animations/playback remain generic or desktop dependent"
     },
     {
       "area": "Draw advanced",
       "features": "Groups, paths, connectors, layers, transformations, embedded objects",
-      "availability": "generic UNO",
-      "entrypoints": "drawing services and shape interfaces",
-      "verification": "Basic shape tested; advanced interfaces unverified"
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "presentation_group/layers/shape_edit; polygon/polyline/Bezier/custom/OLE shape services",
+      "verification": "Groups/ungrouping, layers, masters, shape edits/removal and PNG/SVG exports tested; paths/connectors/OLE embedding unverified"
     },
     {
       "area": "Math",
@@ -139,9 +139,9 @@
     {
       "area": "Base documents",
       "features": "Data sources, query definitions, forms, reports",
-      "availability": "generic UNO",
-      "entrypoints": "DataSource; CommandDefinitions; FormDocuments; ReportDocuments",
-      "verification": "DataSource/SQL tested; forms/reports unverified"
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "base_configure; base_queries; form_control; FormDocuments/ReportDocuments",
+      "verification": "DataSource and query-definition ODB roundtrip tested; Base form/report document containers remain generic and unverified"
     },
     {
       "area": "Base drivers",
@@ -153,9 +153,9 @@
     {
       "area": "Import/export",
       "features": "Common ODF/OOXML/PDF/text/HTML formats; discovery of all installed filters",
-      "availability": "dedicated + generic UNO",
-      "entrypoints": "document_save; filter_list; storeToURL/storeAsURL",
-      "verification": "ODF/PDF integration; other conversions unverified"
+      "availability": "dedicated + installed filters",
+      "entrypoints": "document_save; document_export; filter_list",
+      "verification": "ODF/PDF plus DOCX/XLSX/PPTX readback, text/HTML/EPUB output and encrypted ODT readback tested; format fidelity depends on content"
     },
     {
       "area": "PDF options",
@@ -167,44 +167,44 @@
     {
       "area": "Images/rendering",
       "features": "Embedded graphics; page/image export",
-      "availability": "dedicated + generic UNO",
-      "entrypoints": "GraphicProvider; GraphicExportFilter",
-      "verification": "Writer image decoding/embedding covered; presentation images and graphic export unverified"
+      "availability": "dedicated",
+      "entrypoints": "writer_image; presentation_shape(image); presentation_export",
+      "verification": "Writer graphics and Draw PNG/SVG export tested; other image export formats and presentation image insertion unverified"
     },
     {
       "area": "Printing",
       "features": "Printer selection, job settings, print submission",
-      "availability": "generic UNO / host dependent",
-      "entrypoints": "XPrintable; .uno:Print; printer properties",
-      "verification": "No dedicated print tool; requires configured printer; unverified"
+      "availability": "dedicated / host dependent",
+      "entrypoints": "document_print; printer options",
+      "verification": "Printer descriptor reading tested; actual print submission needs configured host printer and is unverified"
     },
     {
       "area": "Security/signatures",
       "features": "Document protection, encryption, digital signatures, certificates",
-      "availability": "generic UNO / host dependent",
-      "entrypoints": "protect/unprotect; export Password; document digital signature services",
-      "verification": "Not integration verified; certificates and target-reader validation required"
+      "availability": "dedicated + generic UNO / host dependent",
+      "entrypoints": "calc_protect; document_save Password; digital signature services",
+      "verification": "Sheet protection toggling and password-protected ODT readback tested; digital signatures need certificates and remain unverified"
     },
     {
       "area": "Forms/controls",
       "features": "Document form controls, binding, events",
-      "availability": "generic UNO",
-      "entrypoints": "form/control services; DrawPage Forms",
-      "verification": "Not integration verified"
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "form_control; form model/shape handles and generic event/binding APIs",
+      "verification": "Writer TextField form-control ODT roundtrip tested; other controls/bindings/events require further verification"
     },
     {
       "area": "Accessibility/localization",
       "features": "Accessible trees, spellcheck, dictionaries, language tools",
-      "availability": "generic UNO / GUI dependent",
-      "entrypoints": "Accessible contexts; linguistic2 services; installed dictionaries",
-      "verification": "Not integration verified; GUI availability varies"
+      "availability": "dedicated + generic UNO / GUI dependent",
+      "entrypoints": "linguistic_check; Accessible contexts and dictionaries",
+      "verification": "Installed spellchecker invocation tested; unavailable locales reported; accessible trees and dictionary modification unverified"
     },
     {
       "area": "Extensions/configuration",
       "features": "Discover/instantiate installed services and configuration APIs",
-      "availability": "generic UNO",
-      "entrypoints": "uno_services; uno_service; ConfigurationProvider; PackageInformationProvider",
-      "verification": "Service discovery tested; modifications unverified"
+      "availability": "dedicated + generic UNO",
+      "entrypoints": "office_extensions/configuration; uno_services/service",
+      "verification": "Extension enumeration and configuration-node reads tested; configuration writes require advanced mode and are unverified"
     },
     {
       "area": "SDK/reflection",
@@ -218,7 +218,7 @@
       "features": "Installed Basic/Python scripts",
       "availability": "optional trusted automation",
       "entrypoints": "script_run with ScriptProvider URI",
-      "verification": "Registration/gating tested; providers/macros unverified"
+      "verification": "Document Basic invocation tested; Python ScriptProvider and additional installed providers remain host dependent"
     },
     {
       "area": "Python",
@@ -230,9 +230,9 @@
     {
       "area": "OpenAI extensions",
       "features": "Composer file mentions and native settings",
-      "availability": "optional SDK integration",
-      "entrypoints": "OpenAIExtensions; OpenAISettings; document_save_preferred",
-      "verification": "Registration, stdio, settings persistence and file mentions tested; native host UX unverified"
+      "availability": "optional native SDK integration",
+      "entrypoints": "OpenAIExtensions; OpenAISettings; document_save_preferred; office_workspace MCP App",
+      "verification": "SDK registration, stdio, settings/mentions, authenticated HTTP and browser panel flows tested; native host UX requires an MCP Apps host"
     },
     {
       "area": "MCP workflow",
@@ -244,9 +244,9 @@
     {
       "area": "GUI/cloud hosting",
       "features": "Interactive dialogs, browser document editor, authenticated remote multi-user sessions",
-      "availability": "not implemented",
-      "entrypoints": "External application/hosting work required",
-      "verification": "No coverage claim"
+      "availability": "partial / external host required",
+      "entrypoints": "office_workspace; authenticated single-user HTTP; Docker/Compose",
+      "verification": "Basic workspace panel and transport are implemented. Full WYSIWYG editing, OAuth, multi-user isolation and hosted deployment are not implemented"
     }
   ]
 }

@@ -1,0 +1,1 @@
+{"mcpServers":{"libreoffice":{"command":"bash","args":["./scripts/docker-mcp.sh"],"cwd":"."}}}

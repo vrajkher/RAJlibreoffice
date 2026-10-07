@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - run: sudo apt-get update && sudo apt-get install -y libreoffice libreoffice-dev python3-uno libreoffice-sdbc-firebird
+      - run: sudo apt-get update && sudo apt-get install -y libreoffice libreoffice-dev python3-uno libreoffice-sdbc-firebird hunspell-en-us hyphen-en-us
       - run: python -m pip install -e '.[dev]' 'mcp>=1.30,<2'
       - run: python -m unittest discover -s tests -v
       - run: raj-libreoffice doctor
@@ -27,3 +27,27 @@ jobs:
       - run: python -m pip install -e '.[openai,dev]'
       - run: python -m unittest discover -s tests -v
 
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker build --build-arg OPENAI=1 -t raj-libreoffice:test .
+      - run: docker run --rm --user 0 -v "$PWD:/app:ro" -e PYTHONPATH=/app/src --entrypoint python raj-libreoffice:test -m unittest discover -s tests -v
+      - run: docker run --rm raj-libreoffice:test doctor
+  panel:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: git diff --exit-code -- ../src/raj_libreoffice/panel.html
+      - run: npx playwright install --with-deps chromium
+      - run: npm test

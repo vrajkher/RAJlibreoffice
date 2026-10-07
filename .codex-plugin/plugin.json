@@ -1,6 +1,6 @@
 {
   "name": "raj-libreoffice",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Read, edit and export LibreOffice documents with Python UNO and structured MCP tools.",
   "author": {"name": "vrajkher"},
   "skills": "./skills/",

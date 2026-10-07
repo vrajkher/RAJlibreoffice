@@ -18,6 +18,7 @@ import uuid
 # Permit direct execution without installing this package in the UNO interpreter.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from raj_libreoffice.config import Config, workspace_path
+from raj_libreoffice.features import FeatureMethods, FEATURES
 
 
 KINDS = {
@@ -39,7 +40,7 @@ FORMATS = {
 }
 
 
-class Office:
+class Office(FeatureMethods):
     def __init__(self, config):
         self.config = Config(**{**config, "workspace": Path(config["workspace"]).resolve()})
         self.config.workspace.mkdir(parents=True, exist_ok=True)
@@ -558,7 +559,9 @@ class Office:
                            width=10000, height=3000, properties=None, image_path=None):
         self.dimensions(width, height)
         names = {"text": "TextShape", "rectangle": "RectangleShape", "ellipse": "EllipseShape",
-                 "line": "LineShape", "image": "GraphicObjectShape", "connector": "ConnectorShape"}
+                 "line": "LineShape", "image": "GraphicObjectShape", "connector": "ConnectorShape",
+                 "polygon": "PolyPolygonShape", "polyline": "PolyLineShape",
+                 "bezier": "ClosedBezierShape", "custom": "CustomShape", "ole": "OLE2Shape"}
         if kind not in names:
             raise ValueError("Unknown shape kind")
         if kind == "image" and not image_path:
@@ -857,6 +860,8 @@ OPERATIONS = {
         "uno_dispatch script_run python_run handles_release"
     ).split()
 }
+
+OPERATIONS.update(FEATURES)
 
 
 def main():
