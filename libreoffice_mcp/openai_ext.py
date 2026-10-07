@@ -5,8 +5,6 @@ Adds ChatGPT-native behaviour when `openai-mcp-extensions` is installed:
   * file entrypoint: opening an office file in ChatGPT routes it to `open_chatgpt_file`
 The server runs unchanged without the package; install with `pip install openai-mcp-extensions`.
 """
-from __future__ import annotations
-
 from typing import Any
 
 from . import bridge as b
@@ -51,8 +49,8 @@ def load():
         try:
             ext, tools = _build()
             _cache = ([ext], tools)
-        except Exception:
-            _cache = ([], [])
+        except ImportError:
+            _cache = ([], [])  # SDK not installed: optional layer stays off
     return _cache
 
 

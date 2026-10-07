@@ -1,6 +1,7 @@
 """MCP server entry point: registers every tool module."""
 import argparse
 import functools
+import sys
 import importlib
 
 from mcp.server.mcpserver import MCPServer
@@ -28,8 +29,8 @@ def build():
     try:
         from .openai_ext import extensions as ext
         extensions = ext()
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[libreoffice-mcp] OpenAI extensions disabled: {e}", file=sys.stderr)
     server = MCPServer("libreoffice", instructions="Call lo_guide first. Open or create a document, edit it with the writer_/calc_/impress_ tools, then save it.", extensions=extensions)
     for name in MODULES:
         try:
@@ -44,8 +45,8 @@ def build():
         from .openai_ext import extra_tools
         for fn, kw in extra_tools():
             server.add_tool(_safe(fn), **kw)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[libreoffice-mcp] OpenAI file entrypoint disabled: {e}", file=sys.stderr)
     return server
 
 

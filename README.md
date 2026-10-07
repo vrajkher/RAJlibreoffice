@@ -50,9 +50,9 @@ With `pip install openai-mcp-extensions` ([openai/mcp-extensions](https://github
 ```bash
 python3 tests/run.py            # live tests against headless LibreOffice (Writer, Calc, Impress/Draw)
 python3 tests/e2e_stdio.py      # spawns the server and drives it with an MCP client
+python3 tests/e2e_openai.py     # OpenAI extensions: @mention search, file entrypoint metadata, host-provided file (needs openai-mcp-extensions)
 ```
 
 - **Math and Base are untested**: the machine used for development had no `libreoffice-math` or full Base package. The tools skip with a clear error when a module is missing.
-- **The OpenAI extension layer is untested**: its package could not be installed in the development sandbox; it was written against the SDK source and README.
 - `run_python` and `run_macro` execute arbitrary code with your user's rights; expose this server only to clients you trust.
 - Tools target headless operation; slideshow start and other UI actions may need a visible window.
