@@ -104,11 +104,21 @@ class LibreOfficeTests(unittest.TestCase):
         self.call("base_transaction", connection=conn, action="begin")
         self.call("base_query", connection=conn, sql='INSERT INTO "items" VALUES (?, ?)',
                   parameters=[1, "UNO"], write=True)
+        pending = self.call("base_query", connection=conn, sql='SELECT "name" FROM "items" WHERE "id" = ?',
+                            parameters=[1])
+        self.assertEqual(pending["rows"], [["UNO"]])
         self.call("base_transaction", connection=conn, action="commit")
         self.assertIn("items", self.call("base_tables", connection=conn))
         result = self.call("base_query", connection=conn, sql='SELECT "name" FROM "items" WHERE "id" = ?',
                            parameters=[1])
         self.assertEqual(result["rows"], [["UNO"]])
+        self.call("base_query", connection=conn, sql='INSERT INTO "items" VALUES (?, ?)',
+                  parameters=[2, "Rollback"], write=True)
+        self.assertEqual(self.call("base_query", connection=conn,
+                                  sql='SELECT "name" FROM "items" WHERE "id" = 2')["rows"], [["Rollback"]])
+        self.call("base_transaction", connection=conn, action="rollback")
+        self.assertEqual(self.call("base_query", connection=conn,
+                                  sql='SELECT "name" FROM "items" WHERE "id" = 2')["rows"], [])
         self.call("base_transaction", connection=conn, action="close")
         self.call("document_save", document=doc)
 

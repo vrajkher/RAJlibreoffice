@@ -4,7 +4,7 @@ Requires MCP 2. Kept separate so standard MCP 1 clients remain supported.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -12,7 +12,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class Preferences(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    default_format: str = Field(title="Default output format", min_length=1, max_length=12)
+    default_format: Literal["native", "pdf", "odt", "ods", "odp", "odg", "odf", "odb", "docx", "xlsx", "pptx"] = Field(
+        title="Default output format", description="Native chooses the document's ODF format")
     export_pdf_after_save: bool = Field(title="Export a PDF after saving")
 
 
@@ -39,7 +40,7 @@ def make_openai_server(bridge):
     def load():
         if preferences_file.exists():
             return Preferences.model_validate_json(preferences_file.read_text())
-        return Preferences(default_format="odt", export_pdf_after_save=False)
+        return Preferences(default_format="native", export_pdf_after_save=False)
 
     extensions = OpenAIExtensions()
     settings = OpenAISettings(schema=Preferences)
@@ -92,10 +93,15 @@ def make_openai_server(bridge):
         from pathlib import Path
         with settings_lock:
             preferences = load()
-        output = str(Path(path).with_suffix("." + preferences.default_format))
+        extension = preferences.default_format
+        if extension == "native":
+            kind = bridge.call("document_info", document=document)["kind"]
+            extension = {"writer": "odt", "calc": "ods", "impress": "odp", "draw": "odg",
+                         "math": "odf", "base": "odb"}[kind]
+        output = str(Path(path).with_suffix("." + extension))
         result = bridge.call("document_save", document=document, path=output,
-                             format=preferences.default_format, overwrite=overwrite)
-        if preferences.export_pdf_after_save:
+                             format=extension, overwrite=overwrite)
+        if preferences.export_pdf_after_save and extension != "pdf":
             result["pdf"] = bridge.call("document_save", document=document,
                                         path=str(Path(path).with_suffix(".pdf")),
                                         format="pdf", overwrite=overwrite, export=True)

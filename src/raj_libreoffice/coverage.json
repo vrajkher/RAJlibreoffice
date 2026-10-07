@@ -22,7 +22,7 @@
       "features": "Tables, bookmarks, fields, images, styles",
       "availability": "dedicated",
       "entrypoints": "writer_table/bookmark/field/image; style_*",
-      "verification": "Tables/bookmarks/fields covered; images/styles need more tests"
+      "verification": "Tables/bookmarks/fields/images/style editing covered; broader structures use generic UNO"
     },
     {
       "area": "Writer advanced text",
@@ -162,14 +162,14 @@
       "features": "Page selection, PDF/A versions, forms, bookmarks, tagging",
       "availability": "generic export options",
       "entrypoints": "FilterData through document_save or UNO filters",
-      "verification": "Basic PDF tested; individual options unverified"
+      "verification": "Basic PDF and FilterData option acceptance tested; PDF/A conformance and remaining options unverified"
     },
     {
       "area": "Images/rendering",
       "features": "Embedded graphics; page/image export",
       "availability": "dedicated + generic UNO",
       "entrypoints": "GraphicProvider; GraphicExportFilter",
-      "verification": "Image embedding/graphic export need further tests"
+      "verification": "Writer image decoding/embedding covered; presentation images and graphic export unverified"
     },
     {
       "area": "Printing",
@@ -232,7 +232,7 @@
       "features": "Composer file mentions and native settings",
       "availability": "optional SDK integration",
       "entrypoints": "OpenAIExtensions; OpenAISettings; document_save_preferred",
-      "verification": "Separate OpenAI CI registration test; host UX unverified"
+      "verification": "Registration, stdio, settings persistence and file mentions tested; native host UX unverified"
     },
     {
       "area": "MCP workflow",

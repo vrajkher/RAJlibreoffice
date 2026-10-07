@@ -621,9 +621,11 @@ class Office:
             doc.setPropertyValue("Formula", formula)
         return {"formula": doc.getPropertyValue("Formula")}
 
-    def base_connect(self, document, user="", password=""):
+    def base_connect(self, document, user="", password="", read_only=False):
         # Shared Base connections disallow transaction/read-only state changes.
         connection = self.doc(document, "base").DataSource.getIsolatedConnection(user, password)
+        if read_only:
+            connection.setReadOnly(True)
         return self.handle(connection, document)
 
     def base_tables(self, connection):
@@ -632,15 +634,14 @@ class Office:
     def base_query(self, connection, sql, parameters=None, limit=1000, write=False):
         if not 1 <= limit <= 10000:
             raise ValueError("limit must be between 1 and 10000")
-        # SQL classification cannot enforce read-only mode. Use SDBC's connection
-        # read-only flag as well, and rely on DB credentials for strong restrictions.
         conn = self.ref(connection)
-        previous = conn.isReadOnly()
+        if write and conn.isReadOnly():
+            raise ValueError("The database connection is read-only")
         statement = None
         result = None
         try:
-            if not write:
-                conn.setReadOnly(True)
+            # Never toggle connection state inside a transaction: some drivers
+            # restart/commit transactions on setReadOnly. Request that at connect.
             statement = conn.prepareStatement(sql)
             statement.setPropertyValue("MaxRows", limit + 1)
             for i, value in enumerate(parameters or [], 1):
@@ -686,8 +687,6 @@ class Office:
                 result.close()
             if statement:
                 statement.close()
-            if not write:
-                conn.setReadOnly(previous)
 
     def base_transaction(self, connection, action):
         conn = self.ref(connection)

@@ -66,7 +66,7 @@ class StdioTests(unittest.TestCase):
                     from pathlib import Path
                     Path(directory, "report.odt").write_text("mention fixture")
                     send("tools/call", {"name": "settings.read", "arguments": {}}, 5)
-                    self.assertEqual(receive(5)["structuredContent"]["values"]["default_format"], "odt")
+                    self.assertEqual(receive(5)["structuredContent"]["values"]["default_format"], "native")
                     send("tools/call", {"name": "settings.update", "arguments": {"set": {
                         "default_format": "xlsx", "export_pdf_after_save": True}}}, 6)
                     self.assertEqual(receive(6)["structuredContent"]["values"]["default_format"], "xlsx")

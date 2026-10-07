@@ -8,7 +8,7 @@ A test listed below is an implemented test, not proof of a passing run. Consult 
 |---|---|---|---|
 | Documents | Creation, opening, metadata, save, export, close, undo | dedicated: `document_*; filter_list` | Roundtrip and overwrite integration tests |
 | Writer body | Read, insert, replace, character and paragraph formatting | dedicated: `writer_read/insert/replace/format` | Writer roundtrip test |
-| Writer structures | Tables, bookmarks, fields, images, styles | dedicated: `writer_table/bookmark/field/image; style_*` | Tables/bookmarks/fields covered; images/styles need more tests |
+| Writer structures | Tables, bookmarks, fields, images, styles | dedicated: `writer_table/bookmark/field/image; style_*` | Tables/bookmarks/fields/images/style editing covered; broader structures use generic UNO |
 | Writer advanced text | Headers/footers, sections, frames, footnotes, endnotes | generic UNO: `Text, TextSections, TextFrames, Footnotes, Endnotes, PageStyles` | Recipes only; not integration verified |
 | Writer review | Comments, tracked changes, redlines, text comparisons | generic UNO: `Annotation fields; Redlines and document comparison APIs/dispatch` | Not integration verified |
 | Writer publishing | Indexes/TOC, mail merge, templates, linked content | generic UNO: `ContentIndex, DocumentIndexes, MailMerge, document/template APIs` | Not integration verified |
@@ -28,8 +28,8 @@ A test listed below is an implemented test, not proof of a passing run. Consult 
 | Base documents | Data sources, query definitions, forms, reports | generic UNO: `DataSource; CommandDefinitions; FormDocuments; ReportDocuments` | DataSource/SQL tested; forms/reports unverified |
 | Base drivers | Firebird, JDBC, ODBC, PostgreSQL/MySQL and other SDBC backends | installation dependent: `Installed SDBC services, driver packages and credentials` | Only embedded Firebird integration fixture |
 | Import/export | Common ODF/OOXML/PDF/text/HTML formats; discovery of all installed filters | dedicated + generic UNO: `document_save; filter_list; storeToURL/storeAsURL` | ODF/PDF integration; other conversions unverified |
-| PDF options | Page selection, PDF/A versions, forms, bookmarks, tagging | generic export options: `FilterData through document_save or UNO filters` | Basic PDF tested; individual options unverified |
-| Images/rendering | Embedded graphics; page/image export | dedicated + generic UNO: `GraphicProvider; GraphicExportFilter` | Image embedding/graphic export need further tests |
+| PDF options | Page selection, PDF/A versions, forms, bookmarks, tagging | generic export options: `FilterData through document_save or UNO filters` | Basic PDF and FilterData option acceptance tested; PDF/A conformance and remaining options unverified |
+| Images/rendering | Embedded graphics; page/image export | dedicated + generic UNO: `GraphicProvider; GraphicExportFilter` | Writer image decoding/embedding covered; presentation images and graphic export unverified |
 | Printing | Printer selection, job settings, print submission | generic UNO / host dependent: `XPrintable; .uno:Print; printer properties` | No dedicated print tool; requires configured printer; unverified |
 | Security/signatures | Document protection, encryption, digital signatures, certificates | generic UNO / host dependent: `protect/unprotect; export Password; document digital signature services` | Not integration verified; certificates and target-reader validation required |
 | Forms/controls | Document form controls, binding, events | generic UNO: `form/control services; DrawPage Forms` | Not integration verified |
@@ -38,7 +38,7 @@ A test listed below is an implemented test, not proof of a passing run. Consult 
 | SDK/reflection | Methods, properties, runtime types, structs, enums, Any, sequences | dedicated: `uno_inspect/type/get/set/call/service` | Reflection and Point struct integration test; more types needed |
 | Scripts | Installed Basic/Python scripts | optional trusted automation: `script_run with ScriptProvider URI` | Registration/gating tested; providers/macros unverified |
 | Python | Arbitrary trusted automation using PyUNO and standard Python | optional trusted automation: `python_run` | Integration test edits text and returns result |
-| OpenAI extensions | Composer file mentions and native settings | optional SDK integration: `OpenAIExtensions; OpenAISettings; document_save_preferred` | Separate OpenAI CI registration test; host UX unverified |
+| OpenAI extensions | Composer file mentions and native settings | optional SDK integration: `OpenAIExtensions; OpenAISettings; document_save_preferred` | Registration, stdio, settings persistence and file mentions tested; native host UX unverified |
 | MCP workflow | Ordered dependent operations, resources, editing prompt | dedicated: `workflow_run; libreoffice://guide/tools/coverage; edit_document` | Unit and MCP schema tests |
 | GUI/cloud hosting | Interactive dialogs, browser document editor, authenticated remote multi-user sessions | not implemented: `External application/hosting work required` | No coverage claim |
 
