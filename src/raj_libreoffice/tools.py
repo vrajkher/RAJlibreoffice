@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import inspect
 import json
+from functools import wraps
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .bridge import Bridge
+from .bridge import Bridge, OfficeError
 from .config import workspace_path
 from .worker import OPERATIONS, Office
 
@@ -68,6 +69,21 @@ DESCRIPTIONS = {
 ADVANCED = {"uno_get", "uno_set", "uno_call", "uno_service", "uno_dispatch", "script_run", "python_run"}
 READ_ONLY = {"status", "document_list", "document_info", "filter_list", "writer_read", "style_list",
              "calc_read", "presentation_read", "base_tables", "uno_inspect", "uno_services", "uno_type"}
+
+
+def expected_errors(fn):
+    """Expose actionable domain errors using the SDK's public ToolError seam."""
+    @wraps(fn)
+    def invoke(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except (OfficeError, ValueError, TypeError, OSError) as error:
+            try:
+                from mcp.server.fastmcp.exceptions import ToolError
+            except ImportError:
+                from mcp.server.mcpserver.exceptions import ToolError
+            raise ToolError(str(error)) from error
+    return invoke
 
 STRING_ARGS = {"document", "path", "kind", "search", "replacement", "family", "name", "range",
                "action", "new_name", "number_format", "content", "formula", "connection", "user",
@@ -144,7 +160,7 @@ def register_tools(server, bridge: Bridge, annotation_class):
         tool.__signature__ = signature
         tool.__annotations__ = {p.name: p.annotation for p in signature.parameters.values()}
         tool.__annotations__["return"] = dict[str, Any]
-        return tool
+        return expected_errors(tool)
 
     for operation in sorted(enabled):
         annotations = annotation_class(**{
@@ -188,6 +204,7 @@ def register_tools(server, bridge: Bridge, annotation_class):
                 "completed": len(completed), "requested": len(steps)}
 
     @server.tool(annotations=annotation_class(**{"readOnlyHint": True}))
+    @expected_errors
     def files_list(directory: str = ".", query: str = "", limit: int = 100) -> dict[str, Any]:
         """List immediate workspace files and folders. Uses local filenames, not remote URLs."""
         if not 1 <= limit <= 1000:

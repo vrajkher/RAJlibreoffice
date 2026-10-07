@@ -511,11 +511,14 @@ class Office:
         cells, address = self.cell_range(document, sheet, range)
         if column < 0 or column > address.EndColumn - address.StartColumn:
             raise ValueError("Sort column is a zero-based offset inside the range")
-        field = self.uno.createUnoStruct("com.sun.star.util.SortField")
-        field.Field, field.SortAscending = column, ascending
+        field = self.uno.createUnoStruct("com.sun.star.table.TableSortField")
+        field.Field, field.IsAscending = column, ascending
         descriptor = {p.Name: p.Value for p in cells.createSortDescriptor()}
-        descriptor.pop("IsSortColumns", None)
-        descriptor.update({"SortFields": (field,), "ContainsHeader": header, "SortColumns": False})
+        # PropertyValue.Value is Any: a plain tuple becomes []any and is silently
+        # ignored by Calc's sort parser. Supply the exact sequence type.
+        descriptor.update({"SortFields": self.uno.Any(
+            "[]com.sun.star.table.TableSortField", (field,)),
+            "ContainsHeader": header, "IsSortColumns": False})
         # Already-native structs must bypass JSON decoding.
         props = []
         for name, value in descriptor.items():
@@ -608,7 +611,8 @@ class Office:
         return {"formula": doc.getPropertyValue("Formula")}
 
     def base_connect(self, document, user="", password=""):
-        connection = self.doc(document, "base").DataSource.getConnection(user, password)
+        # Shared Base connections disallow transaction/read-only state changes.
+        connection = self.doc(document, "base").DataSource.getIsolatedConnection(user, password)
         return self.handle(connection, document)
 
     def base_tables(self, connection):
